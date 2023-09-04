@@ -1,14 +1,54 @@
 <script>
 	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { crossfade, fade, scale } from 'svelte/transition';
+	import { PUBLIC_API_BASE_PATH } from '$env/static/public';
+	import ValidationIcon from './validationIcon.svelte';
+
+	class Item {
+		url = '';
+		name = '';
+		issuer = '';
+		signature = '';
+		isValid = false;
+		validity = 0;
+		isLoaded = false;
+		commonName = '';
+		certStartDate = new Date();
+		certEndDate = new Date();
+		isCA = false;
+		/**
+		 * @type {string[]}
+		 */
+		certDnsNames = [];
+		/**
+		 * @type {{commonName: string, issuer: string, isCA: boolean}[]}
+		 */
+		otherCerts = [];
+		/**
+		 * @type {string[]}
+		 */
+		validationIssues = [];
+	}
 
 	/**
-	 * @type {{url: string, name: string, issuer: string, signature: string, isValid: boolean, validationError: string, validity: number, isLoaded: boolean}[]}
+	 * @type {Item[]}
 	 */
 	let items = [];
 
+	/**
+	 * @type {Item | null}
+	 */
+	let selected = null;
+	let showModal = false;
+
+	const [send, receive] = crossfade({
+		duration: 200,
+		// @ts-ignore
+		fallback: scale
+	});
+
 	onMount(async () => {
-		const res = await fetch(`http://localhost:3000/api/site-list`);
+		const res = await fetch(`${PUBLIC_API_BASE_PATH}/site-list`);
 		/**
 		 * @type {{url: string, name: string}[]}
 		 */
@@ -20,9 +60,15 @@
 				issuer: '',
 				signature: '',
 				isValid: false,
-				validationError: '',
 				validity: 0,
-				isLoaded: false
+				isLoaded: false,
+				commonName: '',
+				isCA: false,
+				certDnsNames: [],
+				otherCerts: [],
+				validationIssues: [],
+				certStartDate: new Date(),
+				certEndDate: new Date()
 			};
 		});
 
@@ -32,26 +78,37 @@
 	});
 
 	/**
-	 * @param {{ url: any; issuer: any; signature: any; isValid: any; validationError: any; validity: any; isLoaded: boolean; }} item
+	 * @param {Item} item
 	 */
 	function loadItem(item) {
-		fetch(`http://localhost:3000/api/check-url?url=${item.url}`)
+		fetch(`${PUBLIC_API_BASE_PATH}/check-url?url=${item.url}`)
 			.then((res) => res.json())
 			.then((data) => {
-				console.log(data);
 				item.issuer = data.issuer;
 				item.signature = data.signature;
 				item.isValid = data.isValid;
-				item.validationError = data.validationError;
+				item.commonName = data.commonName;
+				item.otherCerts = data.otherCerts;
+				item.certDnsNames = data.certDnsNames;
+				item.isCA = data.isCA;
+				item.certStartDate = new Date(data.certStartDate);
+				item.certEndDate = new Date(data.certEndDate);
+				item.validationIssues = data.validationIssues;
 
-				const startDate = new Date(data.certStartDate);
-				const endDate = new Date(data.certEndDate);
-				const validity = endDate.getTime() - startDate.getTime();
+				const validity = item.certEndDate.getTime() - new Date().getTime();
 				item.validity = validity > 0 ? Math.floor(validity / (1000 * 3600 * 24)) : 0;
 
 				item.isLoaded = true;
 				items = items; // for display refresh
 			});
+	}
+
+	/**
+	 * @param {Item | null} item
+	 */
+	function select(item) {
+		selected = item;
+		showModal = true;
 	}
 </script>
 
@@ -60,64 +117,19 @@
 >
 	{#each items as item}
 		<div
-			class="rounded shadow-lg shadow-gray-200 dark:shadow-gray-900 bg-white dark:bg-gray-800 duration-300 hover:-translate-y-1"
+			class="check-item rounded shadow-lg shadow-gray-200 dark:shadow-gray-900 bg-white dark:bg-gray-800 duration-300 hover:-translate-y-1"
+			in:receive={{ key: item.name }}
+			out:send={{ key: item.name }}
+			on:click={() => select(item)}
+			on:keydown={({ key }) => {
+				if (key === 'enter') select(item);
+			}}
+			role="button"
+			tabindex="0"
 		>
 			<div class="flex rounded-lg h-full bg-gray-600 p-8 flex-col">
 				<div class="flex items-center mb-3">
-					{#if !item.isLoaded}
-						<div
-							class="w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full bg-blue-600 text-white flex-shrink-0"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-								class="w-6 h-6"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-								/>
-							</svg>
-						</div>
-					{:else if item.isValid}
-						<div
-							class="w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full bg-green-600 text-white flex-shrink-0"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-								class="w-6 h-6"
-							>
-								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-							</svg>
-						</div>
-					{:else}
-						<div
-							class="w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full bg-red-600 text-white flex-shrink-0"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-								class="w-6 h-6"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-								/>
-							</svg>
-						</div>
-					{/if}
+					<ValidationIcon type={!item.isLoaded ? 'loading' : item.isValid ? 'success' : 'failed'} />
 					<h2 class="text-white text-lg font-medium">{item.name}</h2>
 				</div>
 				{#if item.isLoaded}
@@ -131,23 +143,6 @@
 						<p transition:fade class="leading-relaxed text-base text-white">
 							Validity: <span class="font-bold">{item.validity} days</span>
 						</p>
-						<a
-							transition:fade
-							href="#/view"
-							class="mt-3 text-white hover:text-blue-600 inline-flex items-center"
-							>Review
-							<svg
-								fill="none"
-								stroke="currentColor"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								class="w-4 h-4 ml-2"
-								viewBox="0 0 24 24"
-							>
-								<path d="M5 12h14M12 5l7 7-7 7" />
-							</svg>
-						</a>
 					</div>
 				{:else}
 					<div role="status" class="max-w-sm animate-pulse">
@@ -163,4 +158,135 @@
 			</div>
 		</div>
 	{/each}
+	{#if showModal}
+		<div
+			id="defaultModal"
+			tabindex="-1"
+			class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full justify-center items-center flex"
+			in:receive|global={{ key: selected?.name }}
+			out:send|global={{ key: selected?.name }}
+		>
+			<div class="relative w-full max-w-2xl max-h-full">
+				<!-- Modal content -->
+				<div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+					<!-- Modal header -->
+					<div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+						<ValidationIcon
+							type={selected?.isValid ? 'success' : 'failed'}
+						/>
+						<h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+							{selected?.name}
+						</h3>
+						<button
+							type="button"
+							class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+							on:click={() => {
+								showModal = false;
+							}}
+						>
+							<svg
+								class="w-3 h-3"
+								aria-hidden="true"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 14 14"
+							>
+								<path
+									stroke="currentColor"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+								/>
+							</svg>
+							<span class="sr-only">Close modal</span>
+						</button>
+					</div>
+					<!-- Modal body -->
+					<div class="p-6 space-y-6">
+						<table class="table-auto leading-relaxed text-base text-gray-400">
+							<tbody>
+								<tr class="border-gray-700">
+									<td class="px-4 py-2 text-white">Common Name</td>
+									<td class="px-4 py-2">{selected?.commonName}</td>
+								</tr>
+								<tr>
+									<td class="px-4 py-2 text-white">Issuer</td>
+									<td class="px-4 py-2">{selected?.issuer}</td>
+								</tr>
+								<tr>
+									<td class="px-4 py-2 text-white">Signature</td>
+									<td class="px-4 py-2">{selected?.signature}</td>
+								</tr>
+								<tr>
+									<td class="px-4 py-2 text-white">Validity</td>
+									<td class="px-4 py-2">
+										<ul class="">
+											<li>{selected?.validity} days</li>
+											<li>Issued on: {selected?.certStartDate.toLocaleString()}</li>
+											<li>Expires on: {selected?.certEndDate.toLocaleString()}</li>
+										</ul></td
+									>
+								</tr>
+								<tr>
+									<td class="px-4 py-2 text-white">Is CA</td>
+									<td class="px-4 py-2">{selected?.isCA}</td>
+								</tr>
+								<tr>
+									<td class="px-4 py-2 text-white">DNS Names</td>
+									<td class="px-4 py-2">{selected?.certDnsNames.join(', ')}</td>
+								</tr>
+								{#each selected?.otherCerts || [] as cert, i}
+									<tr>
+										<td class="px-4 py-2 text-white">Other cert {i + 1}</td>
+										<td class="px-4 py-2"
+											><ul class="">
+												<li>Common Name: <span>{cert.commonName}</span></li>
+												<li>Issuer: {cert.issuer}</li>
+												<li>Is CA: {cert.isCA}</li>
+											</ul></td
+										>
+									</tr>
+								{/each}
+								<tr>
+									<td class="px-4 py-2 text-white">Validation</td>
+									<td class="px-4 py-2">
+										{#if selected?.isValid}
+											Cert is valid
+										{:else}
+											<ul class="">
+												{#each selected?.validationIssues || [] as issue}
+													<li>{issue}</li>
+												{/each}
+											</ul>
+										{/if}
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<!-- Modal footer -->
+					<div
+						class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600"
+					>
+						<button
+							type="button"
+							on:click={() => {
+								showModal = false;
+							}}
+							class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+							>OK</button
+						>
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
+
+<style>
+	button,
+	.check-item {
+		will-change: transform;
+	}
+</style>

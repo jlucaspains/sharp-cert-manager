@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -50,11 +52,11 @@ func (h Handlers) CheckStatus(c *fiber.Ctx) error {
 		return err
 	}
 
-	regx := regexp.MustCompile(`https?:\/\/`)
-	hostName := regx.ReplaceAllString(params.Url, "")
+	hostName := strings.Split(params.Url, ":")[1]
+	hostName = strings.Trim(hostName, "/")
 
 	if resp.TLS == nil {
-		result := &models.CertCheckResult{Hostname: hostName, CertStartDate: "", CertEndDate: "", CertDnsNames: []string{}, IsValid: false}
+		result := &models.CertCheckResult{Hostname: hostName, CertStartDate: time.Time{}, CertEndDate: time.Time{}, CertDnsNames: []string{}, IsValid: false}
 		c.JSON(result)
 		return nil
 	}
@@ -62,18 +64,55 @@ func (h Handlers) CheckStatus(c *fiber.Ctx) error {
 	certStartDate := resp.TLS.PeerCertificates[0].NotBefore
 	certEndDate := resp.TLS.PeerCertificates[0].NotAfter
 
-	isValid := resp.TLS.PeerCertificates[0].VerifyHostname(hostName) == nil && certStartDate.Before(time.Now().UTC()) && certEndDate.After(time.Now().UTC())
+	isValid, errors := validate(resp.TLS.PeerCertificates[0], hostName)
 	result := &models.CertCheckResult{
-		Hostname:      hostName,
-		Issuer:        resp.TLS.PeerCertificates[0].Issuer.CommonName,
-		Signature:     resp.TLS.PeerCertificates[0].SignatureAlgorithm.String(),
-		CertStartDate: certStartDate.String(),
-		CertEndDate:   certEndDate.String(),
-		CertDnsNames:  resp.TLS.PeerCertificates[0].DNSNames,
-		IsValid:       isValid,
+		Hostname:         hostName,
+		Issuer:           resp.TLS.PeerCertificates[0].Issuer.CommonName,
+		Signature:        resp.TLS.PeerCertificates[0].SignatureAlgorithm.String(),
+		CertStartDate:    certStartDate,
+		CertEndDate:      certEndDate,
+		CertDnsNames:     resp.TLS.PeerCertificates[0].DNSNames,
+		TLSVersion:       resp.TLS.Version,
+		IsCA:             resp.TLS.PeerCertificates[0].IsCA,
+		CommonName:       resp.TLS.PeerCertificates[0].Subject.CommonName,
+		IsValid:          isValid,
+		OtherCerts:       getOtherCerts(resp.TLS.PeerCertificates[1:]),
+		ValidationIssues: errors,
 	}
 
 	c.JSON(result)
 
 	return nil
+}
+
+func validate(cert *x509.Certificate, hostName string) (isValid bool, errors []string) {
+	isHostNameValid := cert.VerifyHostname(hostName) == nil
+	areDatesValid := cert.NotBefore.Before(time.Now().UTC()) && cert.NotAfter.After(time.Now().UTC())
+	isSignatureValid := cert.SignatureAlgorithm.String() != "SHA1-RSA"
+	isValid = isHostNameValid && areDatesValid && isSignatureValid
+
+	if !isHostNameValid {
+		errors = append(errors, "Hostname is not valid")
+	}
+	if !areDatesValid {
+		errors = append(errors, "Certificate is not valid yet or expired")
+	}
+	if !isSignatureValid {
+		errors = append(errors, "SHA1 is not a secure signature algorithm")
+	}
+
+	return
+}
+
+func getOtherCerts(certs []*x509.Certificate) []models.OtherCert {
+	results := []models.OtherCert{}
+	for _, v := range certs {
+		results = append(results, models.OtherCert{
+			IsCA:       v.IsCA,
+			CommonName: v.Subject.CommonName,
+			Issuer:     v.Issuer.CommonName,
+		})
+	}
+
+	return results
 }

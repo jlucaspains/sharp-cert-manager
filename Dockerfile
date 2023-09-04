@@ -26,6 +26,8 @@ WORKDIR /app
 COPY frontend/ ./
 RUN npm install
 RUN npm run build
+# Below command is safe as .env has nothing sensitive
+COPY frontend/.env build/.env
 
 FROM scratch as runner
 COPY --from=goBuilder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
