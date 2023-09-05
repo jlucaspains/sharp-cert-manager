@@ -44,8 +44,8 @@ func TestGetCheckStatus(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)
 	assert.True(t, respBody.IsValid)
-	assert.LessOrEqual(t, respBody.CertStartDate, time.Now().String())
-	assert.GreaterOrEqual(t, respBody.CertEndDate, time.Now().String())
+	assert.LessOrEqual(t, respBody.CertStartDate, time.Now())
+	assert.GreaterOrEqual(t, respBody.CertEndDate, time.Now())
 	assert.Contains(t, respBody.Hostname, "blog.lpains.net")
 	assert.Contains(t, respBody.CertDnsNames, "blog.lpains.net")
 }

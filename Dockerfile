@@ -21,15 +21,15 @@ RUN go mod download
 COPY backend/. .
 RUN go build -ldflags "-s -w" -o ./certChecker ./main.go
 
-FROM node:16-alpine as svelteBuiler
+FROM node:16-alpine AS svelteBuiler
 WORKDIR /app
 COPY frontend/ ./
-RUN npm install
+RUN npm install --ignore-scripts
 RUN npm run build
 # Below command is safe as .env has nothing sensitive
 COPY frontend/.env build/.env
 
-FROM scratch as runner
+FROM scratch AS runner
 COPY --from=goBuilder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=goBuilder /etc/passwd /etc/passwd
 COPY --from=goBuilder /etc/group /etc/group
