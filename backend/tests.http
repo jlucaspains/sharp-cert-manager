@@ -1,0 +1,9 @@
+GET http://localhost:3000/api/check-url?url=https://blog.lpains.net HTTP/2
+content-type: application/json
+
+###
+GET http://localhost:3000/api/check-url?url=https://www.sslchecker.com/ HTTP/2
+content-type: application/json
+
+###
+GET http://localhost:3000/api/site-list HTTP/2
