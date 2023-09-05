@@ -44,7 +44,7 @@ jobs:
       - name: Pull request comment
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          path: test-result.txt
+          path: ./backend/test-result.txt
 
       - name: Docker meta
         id: meta
