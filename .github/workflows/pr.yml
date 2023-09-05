@@ -9,6 +9,10 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  pull-requests: write
+  contents: read
+  
 jobs:
   sonarcloud:
     runs-on: ubuntu-latest
