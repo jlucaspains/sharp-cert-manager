@@ -25,8 +25,8 @@ FROM node:16-alpine AS svelteBuiler
 WORKDIR /app
 COPY frontend/ ./
 RUN npm install --ignore-scripts
-RUN npm run build
 RUN echo "PUBLIC_API_BASE_PATH=http://localhost:3000/api" > build/.env
+RUN npm run build
 
 FROM scratch AS runner
 COPY --from=goBuilder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
