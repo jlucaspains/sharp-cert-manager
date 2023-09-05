@@ -11,6 +11,7 @@
 		signature = '';
 		isValid = false;
 		validity = 0;
+		validityWarning = false;
 		isLoaded = false;
 		commonName = '';
 		certStartDate = new Date();
@@ -61,6 +62,7 @@
 				signature: '',
 				isValid: false,
 				validity: 0,
+				validityWarning: false,
 				isLoaded: false,
 				commonName: '',
 				isCA: false,
@@ -97,6 +99,7 @@
 
 				const validity = item.certEndDate.getTime() - new Date().getTime();
 				item.validity = validity > 0 ? Math.floor(validity / (1000 * 3600 * 24)) : 0;
+				item.validityWarning = item.validity < 60;
 
 				item.isLoaded = true;
 				items = items; // for display refresh
@@ -109,6 +112,20 @@
 	function select(item) {
 		selected = item;
 		showModal = true;
+	}
+
+	/**
+	 * @param {Item | null} item
+	 */
+	function getItemState(item) {
+		if (!item) return 'failed';
+
+		if (!item.isLoaded) return 'loading';
+		if (item.isValid) {
+			if (item.validityWarning) return 'warning';
+			else return 'success';
+		}
+		return 'failed';
 	}
 </script>
 
@@ -129,7 +146,7 @@
 		>
 			<div class="flex rounded-lg h-full bg-gray-600 p-8 flex-col">
 				<div class="flex items-center mb-3">
-					<ValidationIcon type={!item.isLoaded ? 'loading' : item.isValid ? 'success' : 'failed'} />
+					<ValidationIcon type={getItemState(item)} />
 					<h2 class="text-white text-lg font-medium">{item.name}</h2>
 				</div>
 				{#if item.isLoaded}
@@ -171,9 +188,7 @@
 				<div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
 					<!-- Modal header -->
 					<div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
-						<ValidationIcon
-							type={selected?.isValid ? 'success' : 'failed'}
-						/>
+						<ValidationIcon type={selected?.isValid ? 'success' : 'failed'} />
 						<h3 class="text-xl font-semibold text-gray-900 dark:text-white">
 							{selected?.name}
 						</h3>

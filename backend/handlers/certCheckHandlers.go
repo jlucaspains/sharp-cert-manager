@@ -42,6 +42,9 @@ func (h Handlers) CheckStatus(c *fiber.Ctx) error {
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
+		// disabling security here is fine
+		// the purpose of the client is to pull certs
+		// no data exchange is happening
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
