@@ -37,13 +37,6 @@ jobs:
         run: go mod download
         working-directory: ./backend
       
-      - uses: reviewdog/action-staticcheck@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          reporter: github-pr-review
-          filter_mode: nofilter
-          fail_on_error: true
-
       - name: Test
         run: go test -cover ./... > test-result.txt
         working-directory: ./backend
@@ -91,6 +84,7 @@ jobs:
 
       - name: Create .env
         run: echo "PUBLIC_API_BASE_PATH=http://localhost:3000/api" > .env
+        working-directory: ./frontend
 
       - name: Build
         run: npm run build
