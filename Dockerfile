@@ -26,8 +26,7 @@ WORKDIR /app
 COPY frontend/ ./
 RUN npm install --ignore-scripts
 RUN npm run build
-# Below command is safe as .env has nothing sensitive
-COPY frontend/.env build/.env
+RUN echo "PUBLIC_API_BASE_PATH=http://localhost:3000/api" > build/.env
 
 FROM scratch AS runner
 COPY --from=goBuilder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
