@@ -35,6 +35,7 @@ jobs:
 
       - name: Pull dependencies
         run: go mod download
+        working-directory: ./backend
       
       - uses: reviewdog/action-staticcheck@v1
         with:
@@ -45,6 +46,7 @@ jobs:
 
       - name: Test
         run: go test -cover ./... > test-result.txt
+        working-directory: ./backend
       
       - name: Pull request comment
         uses: marocchino/sticky-pull-request-comment@v2
@@ -86,6 +88,9 @@ jobs:
       - name: Install dependencies
         run: npm install
         working-directory: ./frontend
+
+      - name: Create .env
+        run: echo "PUBLIC_API_BASE_PATH=http://localhost:3000/api" > .env
 
       - name: Build
         run: npm run build
