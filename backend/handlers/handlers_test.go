@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,4 +34,22 @@ func TestErrorTranslationSuccess(t *testing.T) {
 
 	assert.Len(t, result.Errors, 1)
 	assert.Equal(t, "Tagline2 should be greater than 1", result.Errors[0])
+}
+
+func makeRequest[K any | []any](router *mux.Router, method string, url string, body any) (code int, respBody *K, err error) {
+	inputBody := ""
+
+	if body != nil {
+		inputBodyJson, _ := json.Marshal(body)
+		inputBody = string(inputBodyJson)
+	}
+
+	req, _ := http.NewRequest(method, url, bytes.NewReader([]byte(inputBody)))
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	result := new(K)
+	err = json.Unmarshal(rr.Body.Bytes(), &result)
+
+	return rr.Code, result, err
 }

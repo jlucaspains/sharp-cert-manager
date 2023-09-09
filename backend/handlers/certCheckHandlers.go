@@ -9,11 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/jlucaspains/sharp-cert-checker/models"
 )
 
-func (h Handlers) GetSiteList(c *fiber.Ctx) error {
+func (h Handlers) GetSiteList(w http.ResponseWriter, r *http.Request) {
 	regx := regexp.MustCompile(`https?:\/\/`)
 	siteList := []models.CheckListResult{}
 	for _, url := range h.SiteList {
@@ -21,22 +20,20 @@ func (h Handlers) GetSiteList(c *fiber.Ctx) error {
 		siteList = append(siteList, models.CheckListResult{Name: hostName, Url: url})
 	}
 
-	c.JSON(siteList)
-
-	return nil
+	h.JSON(w, http.StatusOK, siteList)
 }
 
-func (h Handlers) CheckStatus(c *fiber.Ctx) error {
+func (h Handlers) CheckStatus(w http.ResponseWriter, r *http.Request) {
 	params := &models.CertCheckParams{}
-	params.Url = c.Query("url")
 
-	log.Println("Received message for URL: " + params.Url)
+	params.Url, _ = h.getQueryParam(r, "url")
 
 	if params.Url == "" {
-		c.Status(http.StatusBadRequest)
-		c.JSON(&fiber.Map{"error": "Missing URL parameter"})
-		return nil
+		h.JSON(w, http.StatusBadRequest, &models.ErrorResult{Errors: []string{"Url is required"}})
+		return
 	}
+
+	log.Println("Received message for URL: " + params.Url)
 
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -52,7 +49,8 @@ func (h Handlers) CheckStatus(c *fiber.Ctx) error {
 	resp, err := client.Get(params.Url)
 
 	if err != nil {
-		return err
+		h.JSON(w, http.StatusBadRequest, &models.ErrorResult{Errors: []string{"Could not load provided URL"}})
+		return
 	}
 
 	hostName := strings.Split(params.Url, ":")[1]
@@ -60,8 +58,8 @@ func (h Handlers) CheckStatus(c *fiber.Ctx) error {
 
 	if resp.TLS == nil {
 		result := &models.CertCheckResult{Hostname: hostName, CertStartDate: time.Time{}, CertEndDate: time.Time{}, CertDnsNames: []string{}, IsValid: false}
-		c.JSON(result)
-		return nil
+		h.JSON(w, http.StatusOK, result)
+		return
 	}
 
 	certStartDate := resp.TLS.PeerCertificates[0].NotBefore
@@ -83,9 +81,7 @@ func (h Handlers) CheckStatus(c *fiber.Ctx) error {
 		ValidationIssues: errors,
 	}
 
-	c.JSON(result)
-
-	return nil
+	h.JSON(w, http.StatusOK, result)
 }
 
 func validate(cert *x509.Certificate, hostName string) (isValid bool, errors []string) {
