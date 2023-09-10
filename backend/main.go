@@ -36,26 +36,26 @@ func main() {
 	logMiddleware := midlewares.NewLogMiddleware(log.Default())
 	router.Use(logMiddleware.Func())
 
-	host_port, ok := os.LookupEnv("WEB_HOST_PORT")
+	hostPort, ok := os.LookupEnv("WEB_HOST_PORT")
 	if !ok {
-		host_port = ":3000"
+		hostPort = ":3000"
 	}
 
-	use_tls := false
-	cert_file, ok := os.LookupEnv("TLS_CERT_FILE")
+	useTls := false
+	certFile, ok := os.LookupEnv("TLS_CERT_FILE")
 	if ok {
-		use_tls = true
+		useTls = true
 	}
 
-	cert_key_file, ok := os.LookupEnv("TLS_CERT_KEY_FILE")
+	certKeyFile, ok := os.LookupEnv("TLS_CERT_KEY_FILE")
 	if ok {
-		use_tls = use_tls && true
+		useTls = useTls
 	}
 
-	log.Printf("Starting TLS server on port: %s; use tls: %t", host_port, use_tls)
-	if use_tls {
-		log.Fatalln(http.ListenAndServeTLS(host_port, cert_file, cert_key_file, router))
+	log.Printf("Starting TLS server on port: %s; use tls: %t", hostPort, useTls)
+	if useTls {
+		log.Fatalln(http.ListenAndServeTLS(hostPort, certFile, certKeyFile, router))
 	} else {
-		log.Fatalln(http.ListenAndServe(host_port, router))
+		log.Fatalln(http.ListenAndServe(hostPort, router))
 	}
 }
