@@ -3,3 +3,5 @@ build
 coverage
 tmp
 *.exe
+*.crt
+*.key

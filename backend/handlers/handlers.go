@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -11,6 +12,22 @@ import (
 
 type Handlers struct {
 	SiteList []string
+}
+
+func (h Handlers) JSON(w http.ResponseWriter, statusCode int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	// convert data to json
+	result, _ := json.Marshal(data)
+	w.Write(result)
+}
+
+func (h Handlers) getQueryParam(r *http.Request, key string) (string, error) {
+	if param := r.URL.Query()[key]; param != nil {
+		return param[0], nil
+	}
+
+	return "", fmt.Errorf("%s not found", key)
 }
 
 func (h Handlers) GetConfigSites() []string {

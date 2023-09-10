@@ -1,5 +1,5 @@
 # sharp-cert-checker
-This project aims to provide a simple tool to monitor certificate validity. It is composed of a golang backend API built using [Fiber](https://gofiber.io/) and a frontend build using [Svelte](https://svelte.dev/).
+This project aims to provide a simple tool to monitor certificate validity. It is composed of a golang backend API built using GO http server and [Gorilla Mux](https://github.com/gorilla/mux) and a frontend build using [Svelte](https://svelte.dev/).
 
 ![Demo image](/docs/demo.jpeg)
 
