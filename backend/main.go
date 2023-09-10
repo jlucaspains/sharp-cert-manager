@@ -43,14 +43,10 @@ func main() {
 
 	useTls := false
 	certFile, ok := os.LookupEnv("TLS_CERT_FILE")
-	if ok {
-		useTls = true
-	}
+	useTls = ok
 
 	certKeyFile, ok := os.LookupEnv("TLS_CERT_KEY_FILE")
-	if ok {
-		useTls = useTls
-	}
+	useTls = useTls && ok
 
 	log.Printf("Starting TLS server on port: %s; use tls: %t", hostPort, useTls)
 	if useTls {
