@@ -46,12 +46,7 @@ func (h Handlers) CheckStatus(w http.ResponseWriter, r *http.Request) {
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 	}
-	resp, err := client.Get(params.Url)
-
-	if err != nil {
-		h.JSON(w, http.StatusBadRequest, &models.ErrorResult{Errors: []string{"Could not load provided URL"}})
-		return
-	}
+	resp, _ := client.Get(params.Url)
 
 	hostName := strings.Split(params.Url, ":")[1]
 	hostName = strings.Trim(hostName, "/")
