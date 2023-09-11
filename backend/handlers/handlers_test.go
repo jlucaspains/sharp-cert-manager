@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -34,6 +35,14 @@ func TestErrorTranslationSuccess(t *testing.T) {
 
 	assert.Len(t, result.Errors, 1)
 	assert.Equal(t, "Tagline2 should be greater than 1", result.Errors[0])
+}
+
+func TestErrorTranslationServerError(t *testing.T) {
+	handlers := new(Handlers)
+	code, result := handlers.ErrorToHttpResult(fmt.Errorf("Something went wrong"))
+	assert.Equal(t, http.StatusInternalServerError, code)
+
+	assert.Equal(t, "Unknown error", result.Errors[0])
 }
 
 func makeRequest[K any | []any](router *mux.Router, method string, url string, body any) (code int, respBody *K, err error) {
