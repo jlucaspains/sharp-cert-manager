@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jlucaspains/sharp-cert-checker/models"
+	"github.com/jlucaspains/sharp-cert-manager/models"
 )
 
 func (h Handlers) GetSiteList(w http.ResponseWriter, r *http.Request) {

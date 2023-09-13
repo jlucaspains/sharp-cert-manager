@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/jlucaspains/sharp-cert-checker/models"
+	"github.com/jlucaspains/sharp-cert-manager/models"
 )
 
 type Handlers struct {

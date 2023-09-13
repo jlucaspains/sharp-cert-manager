@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/jlucaspains/sharp-cert-checker/models"
+	"github.com/jlucaspains/sharp-cert-manager/models"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )

@@ -37,7 +37,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            sharp-cert-checker
+            sharp-cert-manager
           tags: |
             type=ref,event=pr
 
@@ -93,7 +93,7 @@ jobs:
         working-directory: ./frontend
 
       - name: Create .env
-        run: echo "PUBLIC_API_BASE_PATH=http://localhost:3000/api" > .env
+        run: echo "PUBLIC_API_BASE_PATH=http://localhost:8000/api" > .env
         working-directory: ./frontend
 
       - name: Build
