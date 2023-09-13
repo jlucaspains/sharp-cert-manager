@@ -18,7 +18,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/sharp-cert-checker
+            ${{ secrets.DOCKERHUB_USERNAME }}/sharp-cert-manager
           tags: |
             type=semver,pattern={{raw}}
             type=raw,value=latest

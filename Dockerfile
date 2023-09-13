@@ -25,7 +25,7 @@ FROM node:16-alpine AS svelteBuiler
 WORKDIR /app
 COPY frontend/ ./
 RUN npm install --ignore-scripts
-RUN echo "PUBLIC_API_BASE_PATH=http://localhost:3000/api" > .env
+RUN echo "PUBLIC_API_BASE_PATH=http://localhost:8000/api" > .env
 RUN npm run build
 
 FROM scratch AS runner
@@ -36,5 +36,5 @@ WORKDIR /app
 COPY --from=goBuilder /app/certChecker .
 COPY --from=svelteBuiler /app/build/ ./public/
 USER appuser:appuser
-EXPOSE 3000
+EXPOSE 8000
 ENTRYPOINT ["./certChecker"]

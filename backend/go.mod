@@ -1,4 +1,4 @@
-module github.com/jlucaspains/sharp-cert-checker
+module github.com/jlucaspains/sharp-cert-manager
 
 go 1.20
 

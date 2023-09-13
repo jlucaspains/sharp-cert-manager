@@ -1,4 +1,4 @@
-# sharp-cert-checker
+# sharp-cert-manager
 This project aims to provide a simple tool to monitor certificate validity. It is composed of a golang backend API built using GO http server and [Gorilla Mux](https://github.com/gorilla/mux) and a frontend build using [Svelte](https://svelte.dev/).
 
 ![Demo image](/docs/demo.jpeg)
@@ -6,12 +6,12 @@ This project aims to provide a simple tool to monitor certificate validity. It i
 At the moment, the app doesn't actively monitor the configured websites. Instead, they are only available in the frontend for review.
 
 ## Getting started
-The easiest way to get started is to run the Docker image published to [Docker Hub](https://hub.docker.com/repository/docker/jlucaspains/sharp-cert-checker/general). Replace the `SITE_1` parameter value with a website to monitor. To add other websites, just add parameters `SITE_n` where `n` is a integer.
+The easiest way to get started is to run the Docker image published to [Docker Hub](https://hub.docker.com/repository/docker/jlucaspains/sharp-cert-manager/general). Replace the `SITE_1` parameter value with a website to monitor. To add other websites, just add parameters `SITE_n` where `n` is a integer.
 
 > Remember to install Docker before running the docker run command.
 
 ```bash
-docker run -it -p 3000:3000 --env ENV=DEV --env SITE_1=https://blog.lpains.net jlucaspains/sharp-cert-checker
+docker run -it -p 8000:8000 --env ENV=DEV --env SITE_1=https://blog.lpains.net jlucaspains/sharp-cert-manager
 ```
 
 ## Running locally
@@ -21,12 +21,12 @@ docker run -it -p 3000:3000 --env ENV=DEV --env SITE_1=https://blog.lpains.net j
 
 ### CLone the repo
 ```bash
-git clone https://github.com/jlucaspains/sharp-cert-checker.git
+git clone https://github.com/jlucaspains/sharp-cert-manager.git
 ```
 
 ### Run the frontend
 ```bash
-cd sharp-cert-checker/frontend
+cd sharp-cert-manager/frontend
 npm install
 npm run dev
 ```
@@ -35,7 +35,7 @@ npm run dev
 First, Install the dependencies:
 
 ```bash
-cd sharp-cert-checker/backend
+cd sharp-cert-manager/backend
 go mod download
 ```
 

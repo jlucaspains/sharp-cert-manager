@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/jlucaspains/sharp-cert-checker/handlers"
-	"github.com/jlucaspains/sharp-cert-checker/midlewares"
+	"github.com/jlucaspains/sharp-cert-manager/handlers"
+	"github.com/jlucaspains/sharp-cert-manager/midlewares"
 	"github.com/joho/godotenv"
 )
 
@@ -38,7 +38,7 @@ func main() {
 
 	hostPort, ok := os.LookupEnv("WEB_HOST_PORT")
 	if !ok {
-		hostPort = ":3000"
+		hostPort = ":8000"
 	}
 
 	useTls := false
