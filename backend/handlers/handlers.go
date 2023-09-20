@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/jlucaspains/sharp-cert-manager/models"
@@ -28,20 +27,6 @@ func (h Handlers) getQueryParam(r *http.Request, key string) (string, error) {
 	}
 
 	return "", fmt.Errorf("%s not found", key)
-}
-
-func (h Handlers) GetConfigSites() []string {
-	siteList := []string{}
-	for i := 1; true; i++ {
-		site, ok := os.LookupEnv(fmt.Sprintf("SITE_%d", i))
-		if !ok {
-			break
-		}
-
-		siteList = append(siteList, site)
-	}
-
-	return siteList
 }
 
 func (h Handlers) ErrorToHttpResult(err error) (int, *models.ErrorResult) {

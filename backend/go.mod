@@ -3,7 +3,9 @@ module github.com/jlucaspains/sharp-cert-manager
 go 1.20
 
 require (
-	github.com/go-playground/validator/v10 v10.15.3
+	github.com/adhocore/gronx v1.6.5
+	github.com/go-playground/validator/v10 v10.15.4
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.4
@@ -11,6 +13,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
