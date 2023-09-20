@@ -1,5 +1,5 @@
 # sharp-cert-manager
-This project aims to provide a simple tool to monitor certificate validity. It is composed of a golang backend API built using GO http server and [Gorilla Mux](https://github.com/gorilla/mux) and a frontend build using [Svelte](https://svelte.dev/).
+This project aims to provide a simple tool to monitor certificate validity. It is composed of a golang backend API built using GO http server and a frontend build using [Svelte](https://svelte.dev/).
 
 ![Demo image](/docs/demo.jpeg)
 
@@ -11,7 +11,7 @@ The easiest way to get started is to run the Docker image published to [Docker H
 > Remember to install Docker before running the docker run command.
 
 ```bash
-docker run -it -p 8000:8000 --env ENV=DEV --env SITE_1=https://blog.lpains.net jlucaspains/sharp-cert-manager
+docker run -it -p 8000:8000 --env ENV=DEV --env SITE_1=https://expired.badssl.com/ jlucaspains/sharp-cert-manager
 ```
 
 ## Running locally
@@ -41,12 +41,28 @@ go mod download
 
 Create a dev `.env` file:
 ```bash
-echo "ENV=local\nSITE_1=https://blog.lpains.net" > .env
+echo "ENV=local\nSITE_1=https://expired.badssl.com/" > .env
 ```
 
 Finally, run the app:
 ```bash
 go run main.go
+```
+
+## Jobs and Teams Webhook
+The app can be configured to run a job at a given schedule. The job will check the configured websites and send a message to a Teams Webhook with a summary of the websites and their certificate validity.
+
+Adjust the `CHECK_CERT_JOB_SCHEDULE` cron to run at the desired schedule.
+
+The `TEAMS_WEBHOOK_URL` is the URL of the Teams Webhook to send the message to. Generate a webhook URL following [this guide](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook#add-an-incoming-webhook-to-a-teams-channel).
+
+```bash
+docker run -it -p 8000:8000 `
+    --env ENV=DEV `
+    --env SITE_1=https://expired.badssl.com/ `
+    --env CHECK_CERT_JOB_SCHEDULE=* * * * * `
+    --env TEAMS_WEBHOOK_URL=ReplaceWithTeamsWebhookUrl `
+    jlucaspains/sharp-cert-manager
 ```
 
 ## Security considerations
