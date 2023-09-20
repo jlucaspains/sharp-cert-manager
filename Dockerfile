@@ -25,7 +25,7 @@ FROM node:16-alpine AS svelteBuiler
 WORKDIR /app
 COPY frontend/ ./
 RUN npm install --ignore-scripts
-RUN echo "PUBLIC_API_BASE_PATH=http://localhost:8000/api" > .env
+RUN echo "PUBLIC_API_BASE_PATH=/api" > .env
 RUN npm run build
 
 FROM scratch AS runner
