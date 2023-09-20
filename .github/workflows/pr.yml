@@ -69,7 +69,7 @@ jobs:
         working-directory: ./backend
       
       - name: Test
-        run: go test -cover ./..
+        run: go test -cover ./...
         working-directory: ./backend
       
       - name: Pull request comment
