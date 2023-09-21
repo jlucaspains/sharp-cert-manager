@@ -1,17 +1,20 @@
 # sharp-cert-manager
 This project aims to provide a simple tool to monitor certificate validity. It is composed of a golang backend API built using GO http server and a frontend build using [Svelte](https://svelte.dev/).
 
-![Demo image](/docs/demo.jpeg)
+![Demo frontend image](/docs/demo.jpeg)
 
-At the moment, the app doesn't actively monitor the configured websites. Instead, they are only available in the frontend for review.
+Additionally, the app can be configured to run a job at a given schedule. The job will check the configured websites and send a message to a Teams Webhook with a summary of the websites and their certificate validity.
+
+![Demo teams message](/docs/TeamsDemo.jpg)
 
 # Getting started
 The easiest way to get started is to run the Docker image published to [Docker Hub](https://hub.docker.com/repository/docker/jlucaspains/sharp-cert-manager/general). Replace the `SITE_1` parameter value with a website to monitor. To add other websites, just add parameters `SITE_n` where `n` is a integer.
 
-> Remember to install Docker before running the docker run command.
-
 ```bash
-docker run -it -p 8000:8000 --env ENV=DEV --env SITE_1=https://expired.badssl.com/ jlucaspains/sharp-cert-manager
+docker run -it -p 8000:8000 \
+    --env ENV=DEV \
+    --env SITE_1=https://expired.badssl.com/ \
+    jlucaspains/sharp-cert-manager
 ```
 
 ## Running locally
@@ -50,7 +53,7 @@ go run main.go
 ```
 
 ## Running in Azure
-## Azure Container Instance
+### Azure Container Instance
 Create an ACI resource via Azure CLI. The following parameters may be adjusted
 1. `--resource-group`: resource group to be used
 2. `--name`: name of the ACI resource
@@ -59,7 +62,8 @@ Create an ACI resource via Azure CLI. The following parameters may be adjusted
    1. `SITE_1..SITE_N`: monitored websites.
 
 ```bash
-az container create --resource-group rg-sharpcertmanager-001 \
+az container create \
+    --resource-group rg-sharpcertmanager-001 \
     --name aci-sharpcertmanager-001 \
     --image jlucaspains/sharp-cert-manager \
     --dns-name-label sharp-cert-manager \
@@ -72,7 +76,8 @@ az container create --resource-group rg-sharpcertmanager-001 \
 First, create an ACA environment using Azure CLI:
 
 ```bash
-az containerapp env create --name ace-sharpcertmanager-001 \
+az containerapp env create \
+    --name ace-sharpcertmanager-001 \
     --resource-group rg-experiments-soutchcentralus-001
 ```
 
@@ -83,7 +88,8 @@ Now, create the actual ACA. The following parameters may be adjusted:
    1. `SITE_1..SITE_N`: monitored websites.
 
 ```bash
-az containerapp create -n aca-sharpcertmanager-001 \
+az containerapp create \
+    -n aca-sharpcertmanager-001 \
     -g rg-experiments-soutchcentralus-001 \
     --image jlucaspains/sharp-cert-manager \
     --environment ace-sharpcertmanager-001 \
