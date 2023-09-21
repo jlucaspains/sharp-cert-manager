@@ -14,7 +14,7 @@ import (
 
 func TestGetCheckStatus(t *testing.T) {
 	url := "https://blog.lpains.net"
-	body, err := CheckCertStatus(models.CertCheckParams{Url: url})
+	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
 
 	assert.Nil(t, err)
 	assert.True(t, body.IsValid)
@@ -24,9 +24,22 @@ func TestGetCheckStatus(t *testing.T) {
 	assert.Contains(t, body.CertDnsNames, "blog.lpains.net")
 }
 
+func TestGetCheckWarning(t *testing.T) {
+	url := "https://blog.lpains.net"
+	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 10000)
+
+	assert.Nil(t, err)
+	assert.True(t, body.IsValid)
+	assert.LessOrEqual(t, body.CertStartDate, time.Now())
+	assert.GreaterOrEqual(t, body.CertEndDate, time.Now())
+	assert.Contains(t, body.Hostname, "blog.lpains.net")
+	assert.Contains(t, body.CertDnsNames, "blog.lpains.net")
+	assert.True(t, body.ExpirationWarning)
+}
+
 func TestGetCheckStatusNoUrl(t *testing.T) {
 	url := ""
-	_, err := CheckCertStatus(models.CertCheckParams{Url: url})
+	_, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "url is required", err.Error())
@@ -34,7 +47,7 @@ func TestGetCheckStatusNoUrl(t *testing.T) {
 
 func TestGetCheckStatusHttp(t *testing.T) {
 	url := "http://blog.lpains.net"
-	body, err := CheckCertStatus(models.CertCheckParams{Url: url})
+	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
 
 	assert.Nil(t, err)
 	assert.False(t, body.IsValid)
@@ -104,7 +117,7 @@ yjbTOuy8KoxNb15g3Ysesbw=
 	defer ts.Close()
 
 	url := ts.URL
-	body, err := CheckCertStatus(models.CertCheckParams{Url: url})
+	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
 
 	assert.Nil(t, err)
 	assert.False(t, body.IsValid)

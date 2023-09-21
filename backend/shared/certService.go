@@ -27,7 +27,7 @@ func GetConfigSites() []string {
 	return siteList
 }
 
-func CheckCertStatus(params models.CertCheckParams) (result models.CertCheckResult, err error) {
+func CheckCertStatus(params models.CertCheckParams, expirationWarningDays int) (result models.CertCheckResult, err error) {
 	if params.Url == "" {
 		err = errors.New("url is required")
 		return
@@ -59,18 +59,19 @@ func CheckCertStatus(params models.CertCheckParams) (result models.CertCheckResu
 
 	isValid, errors := validate(resp.TLS.PeerCertificates[0], hostName)
 	result = models.CertCheckResult{
-		Hostname:         hostName,
-		Issuer:           resp.TLS.PeerCertificates[0].Issuer.CommonName,
-		Signature:        resp.TLS.PeerCertificates[0].SignatureAlgorithm.String(),
-		CertStartDate:    certStartDate,
-		CertEndDate:      certEndDate,
-		CertDnsNames:     resp.TLS.PeerCertificates[0].DNSNames,
-		TLSVersion:       resp.TLS.Version,
-		IsCA:             resp.TLS.PeerCertificates[0].IsCA,
-		CommonName:       resp.TLS.PeerCertificates[0].Subject.CommonName,
-		IsValid:          isValid,
-		OtherCerts:       getOtherCerts(resp.TLS.PeerCertificates[1:]),
-		ValidationIssues: errors,
+		Hostname:          hostName,
+		Issuer:            resp.TLS.PeerCertificates[0].Issuer.CommonName,
+		Signature:         resp.TLS.PeerCertificates[0].SignatureAlgorithm.String(),
+		CertStartDate:     certStartDate,
+		CertEndDate:       certEndDate,
+		CertDnsNames:      resp.TLS.PeerCertificates[0].DNSNames,
+		TLSVersion:        resp.TLS.Version,
+		IsCA:              resp.TLS.PeerCertificates[0].IsCA,
+		CommonName:        resp.TLS.PeerCertificates[0].Subject.CommonName,
+		IsValid:           isValid,
+		OtherCerts:        getOtherCerts(resp.TLS.PeerCertificates[1:]),
+		ValidationIssues:  errors,
+		ExpirationWarning: certEndDate.Before(time.Now().AddDate(0, 0, expirationWarningDays)),
 	}
 
 	return

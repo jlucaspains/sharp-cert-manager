@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"text/template"
 	"time"
-
-	"github.com/jlucaspains/sharp-cert-manager/models"
 )
 
 type TeamsNotifier struct {
@@ -24,7 +22,7 @@ type TeamsNotificationCard struct {
 	Title           string
 	Description     string
 	NotificationUrl string
-	Items           []models.CertCheckResult
+	Items           []CertCheckNotification
 }
 
 const messageTemplate = `{
@@ -71,7 +69,7 @@ const messageTemplate = `{
 									"items": [
 										{
 										"type": "TextBlock",
-										"text": "{{if $item.IsValid}}✔️{{else}}❌{{end}}{{$item.Hostname}}"
+										"text": "{{if not $item.IsValid}}❌{{else if $item.ExpirationWarning}}⚠️{{else}}✔️{{end}}{{$item.Hostname}}"
 										}
 									]
 								},
@@ -80,7 +78,7 @@ const messageTemplate = `{
 									"items": [
 										{
 										"type": "TextBlock",
-										"text": "{{ range $index, $element := $item.ValidationIssues}}{{if $index}}, {{end}}{{$element}}{{end}}",
+										"text": "{{ range $index, $element := $item.Messages}}{{if $index}}, {{end}}{{$element}}{{end}}",
 										"wrap": true
 										}
 									]
@@ -105,7 +103,7 @@ const messageTemplate = `{
 
 func (m *TeamsNotifier) Init(webhookUrl string, notificationTitle string, notificationBody string, notificationUrl string) {
 	if notificationTitle == "" {
-		notificationTitle = "Cert Manager Check Summary"
+		notificationTitle = "Sharp Cert Manager Summary"
 	}
 
 	if notificationBody == "" {
@@ -118,7 +116,7 @@ func (m *TeamsNotifier) Init(webhookUrl string, notificationTitle string, notifi
 	m.WebhookUrl = webhookUrl
 }
 
-func (m *TeamsNotifier) Notify(result []models.CertCheckResult) error {
+func (m *TeamsNotifier) Notify(result []CertCheckNotification) error {
 	client := m.getClient()
 	parsedTemplate := m.getTemplate()
 	card := TeamsNotificationCard{

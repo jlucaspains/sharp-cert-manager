@@ -10,7 +10,8 @@ import (
 )
 
 type Handlers struct {
-	SiteList []string
+	SiteList              []string
+	ExpirationWarningDays int
 }
 
 func (h Handlers) JSON(w http.ResponseWriter, statusCode int, data interface{}) {

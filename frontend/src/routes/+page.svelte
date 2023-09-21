@@ -96,10 +96,10 @@
 				item.certStartDate = new Date(data.certStartDate);
 				item.certEndDate = new Date(data.certEndDate);
 				item.validationIssues = data.validationIssues;
+				item.validityWarning = data.expirationWarning;
 
 				const validity = item.certEndDate.getTime() - new Date().getTime();
 				item.validity = validity > 0 ? Math.floor(validity / (1000 * 3600 * 24)) : 0;
-				item.validityWarning = item.validity < 60;
 
 				item.isLoaded = true;
 				items = items; // for display refresh
