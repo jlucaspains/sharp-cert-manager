@@ -8,7 +8,7 @@ Additionally, the app can be configured to run a job at a given schedule. The jo
 ![Demo teams message](/docs/TeamsDemo.jpg)
 
 # Getting started
-The easiest way to get started is to run the Docker image published to [Docker Hub](https://hub.docker.com/repository/docker/jlucaspains/sharp-cert-manager/general). Replace the `SITE_1` parameter value with a website to monitor. To add other websites, just add parameters `SITE_n` where `n` is a integer.
+The easiest way to get started is to run the Docker image published to [Docker Hub](https://hub.docker.com/repository/docker/jlucaspains/sharp-cert-manager/general). Replace the `SITE_1` parameter value with a website to monitor. To add other websites, just add parameters `SITE_n` where `n` is an integer.
 
 ```bash
 docker run -it -p 8000:8000 \
@@ -57,7 +57,7 @@ go run main.go
 Create an ACI resource via Azure CLI. The following parameters may be adjusted
 1. `--resource-group`: resource group to be used
 2. `--name`: name of the ACI resource
-3. `dns-name-label`: DNS to expose the ACI under
+3. `--dns-name-label`: DNS to expose the ACI under
 4. `--environment-variables`
    1. `SITE_1..SITE_N`: monitored websites.
 
@@ -73,6 +73,7 @@ az container create \
 
 ### Azure Container App
 > While more expensive, an ACA is a better option for production environments as it provides a more robust and scalable environment.
+
 First, create an ACA environment using Azure CLI:
 
 ```bash
@@ -134,3 +135,13 @@ docker run -it -p 8000:8000 `
 This app is intended to run in private environments or at a minimum be behind a secure gateway with proper TLS and authentication to ensure it is not improperly used.
 
 The app will allow unsecured requests to the configured websites. It will perform a get and discard any data returned. All information used is derived from the connection and certificate negotiated between the http client and the web server being monitored.
+
+## Features
+Below features are currentl being evaluated and/or built. If you have a suggestion, please create an issue.
+
+- [x] Display list of monitored certificates
+- [x] Display certificate details
+- [x] Monitor certificate in background
+- [x] Teams WebHook integration
+- [ ] Slack WebHook integration
+- [ ] Monitoring
