@@ -27,7 +27,7 @@ func (h Handlers) CheckStatus(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Received message for URL: " + params.Url)
 
-	result, err := shared.CheckCertStatus(params)
+	result, err := shared.CheckCertStatus(params, h.ExpirationWarningDays)
 
 	if err != nil {
 		h.JSON(w, http.StatusBadRequest, &models.ErrorResult{Errors: []string{err.Error()}})

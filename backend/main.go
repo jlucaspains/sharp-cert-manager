@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	muxHandlers "github.com/gorilla/handlers"
@@ -48,7 +49,9 @@ func startJobs(siteList []string) {
 
 	if ok {
 		log.Printf("Starting job engine with cron: %s", schedule)
-		err := checkCertJob.Init(schedule, siteList, getJobNotifier())
+		level, _ := os.LookupEnv("CHECK_CERT_JOB_NOTIFICATION_LEVEL")
+		warningDays := getCertExpirationWarningDays()
+		err := checkCertJob.Init(schedule, level, warningDays, siteList, getJobNotifier())
 		if err == nil {
 			checkCertJob.Start()
 			log.Print("Job engine started")
@@ -60,6 +63,17 @@ func startJobs(siteList []string) {
 	}
 }
 
+func getCertExpirationWarningDays() int {
+	warningDaysConfig, _ := os.LookupEnv("CERT_WARNING_VALIDITY_DAYS")
+	warningDays, _ := strconv.Atoi(warningDaysConfig)
+
+	if warningDays > 0 {
+		return warningDays
+	}
+
+	return 30
+}
+
 func stopJobs() {
 	checkCertJob.Stop()
 }
@@ -67,6 +81,7 @@ func stopJobs() {
 func startWebServer(siteList []string) {
 	handlers := &handlers.Handlers{}
 	handlers.SiteList = siteList
+	handlers.ExpirationWarningDays = getCertExpirationWarningDays()
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/check-url", handlers.CheckStatus).Methods("GET")
