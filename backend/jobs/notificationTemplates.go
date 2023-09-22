@@ -19,7 +19,7 @@ const slackMessageTemplate = `{
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": "{{if not $item.IsValid}}:x:{{else if $item.ExpirationWarning}}:warning:{{else}}:white_check_mark:{{end}}{{$item.Hostname}} *{{$item.Hostname}}*\n{{ range $index, $element := $item.Messages}}{{if $index}}, {{end}}{{$element}}{{end}}"
+				"text": "{{if not $item.IsValid}}:x:{{else if $item.ExpirationWarning}}:warning:{{else}}:white_check_mark:{{end}}\t*{{$item.Hostname}}*\n{{ range $index, $element := $item.Messages}}{{if $index}}, {{end}}{{$element}}{{end}}"
 			}
 		},
 		{{- end}}

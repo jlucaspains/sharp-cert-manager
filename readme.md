@@ -9,7 +9,7 @@ Teams message:
 ![Demo teams message](/docs/TeamsDemo.jpg)
 
 Slack message:
-![Demo slack message](/docs/SlackDemo.png)
+![Demo slack message](/docs/SlackDemo.jpg)
 
 # Getting started
 The easiest way to get started is to run the Docker image published to [Docker Hub](https://hub.docker.com/repository/docker/jlucaspains/sharp-cert-manager/general). Replace the `SITE_1` parameter value with a website to monitor. To add other websites, just add parameters `SITE_n` where `n` is an integer.
