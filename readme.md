@@ -6,9 +6,11 @@ This project aims to provide a simple tool to monitor certificate validity. It i
 Additionally, the app can be configured to run a job at a given schedule. The job will check the configured websites and send a message to a Webhook with a summary of the websites and their certificate validity.
 
 Teams message:
+
 ![Demo teams message](/docs/TeamsDemo.jpg)
 
 Slack message:
+
 ![Demo slack message](/docs/SlackDemo.jpg)
 
 # Getting started
