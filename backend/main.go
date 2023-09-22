@@ -32,14 +32,15 @@ func loadEnv() {
 }
 
 func getJobNotifier() jobs.Notifier {
-	result := &jobs.TeamsNotifier{}
+	result := &jobs.WebHookNotifier{}
 
-	teamsWebhookUrl, _ := os.LookupEnv("TEAMS_WEBHOOK_URL")
-	teamsMessageUrl, _ := os.LookupEnv("TEAMS_MESSAGE_URL")
-	teamsMessageTitle, _ := os.LookupEnv("TEAMS_MESSAGE_TITLE")
-	teamsMessageBody, _ := os.LookupEnv("TEAMS_MESSAGE_BODY")
+	webhookType, _ := os.LookupEnv("WEBHOOK_TYPE")
+	WebhookUrl, _ := os.LookupEnv("WEBHOOK_URL")
+	messageUrl, _ := os.LookupEnv("MESSAGE_URL")
+	messageTitle, _ := os.LookupEnv("MESSAGE_TITLE")
+	messageBody, _ := os.LookupEnv("MESSAGE_BODY")
 
-	result.Init(teamsWebhookUrl, teamsMessageTitle, teamsMessageBody, teamsMessageUrl)
+	result.Init(jobs.Notifiers[webhookType], WebhookUrl, messageTitle, messageBody, messageUrl)
 
 	return result
 }
