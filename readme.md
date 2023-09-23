@@ -3,9 +3,15 @@ This project aims to provide a simple tool to monitor certificate validity. It i
 
 ![Demo frontend image](/docs/demo.jpeg)
 
-Additionally, the app can be configured to run a job at a given schedule. The job will check the configured websites and send a message to a Teams Webhook with a summary of the websites and their certificate validity.
+Additionally, the app can be configured to run a job at a given schedule. The job will check the configured websites and send a message to a Webhook with a summary of the websites and their certificate validity.
+
+Teams message:
 
 ![Demo teams message](/docs/TeamsDemo.jpg)
+
+Slack message:
+
+![Demo slack message](/docs/SlackDemo.jpg)
 
 # Getting started
 The easiest way to get started is to run the Docker image published to [Docker Hub](https://hub.docker.com/repository/docker/jlucaspains/sharp-cert-manager/general). Replace the `SITE_1` parameter value with a website to monitor. To add other websites, just add parameters `SITE_n` where `n` is an integer.
@@ -99,19 +105,19 @@ az containerapp create \
     --query properties.configuration.ingress.fqdn
 ```
 
-## Jobs and Teams Webhook
-The app can be configured to run a job at a given schedule. The job will check the configured websites and send a message to a Teams Webhook with a summary of the websites and their certificate validity.
+## Jobs and Webhook Notifications
+The app can be configured to run a job at a given schedule. The job will check the configured websites and send a message to a Webhook with a summary of the websites and their certificate validity. Currently, Teams and Slack are supported.
 
 Adjust the `CHECK_CERT_JOB_SCHEDULE` cron to run at the desired schedule.
 
-The `TEAMS_WEBHOOK_URL` is the URL of the Teams Webhook to send the message to. Generate a webhook URL following [this guide](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook#add-an-incoming-webhook-to-a-teams-channel).
+The `WEBHOOK_URL` is the URL of the Teams/Slack Webhook to send the message to. Generate a webhook URL for Teams following [this guide](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook#add-an-incoming-webhook-to-a-teams-channel) and for Slack following [this guide](https://api.slack.com/messaging/webhooks).
 
 ```bash
 docker run -it -p 8000:8000 `
     --env ENV=DEV `
     --env SITE_1=https://expired.badssl.com/ `
     --env CHECK_CERT_JOB_SCHEDULE=* * * * * `
-    --env TEAMS_WEBHOOK_URL=ReplaceWithTeamsWebhookUrl `
+    --env WEBHOOK_URL=ReplaceWithWebhookUrl `
     jlucaspains/sharp-cert-manager
 ```
 
@@ -121,10 +127,10 @@ docker run -it -p 8000:8000 `
 | ENV                               | Environment name. Used to configure the app to run in different environments.   |                                               |
 | SITE_1..SITE_N                    | Websites to monitor.                                                            |                                               |
 | CHECK_CERT_JOB_SCHEDULE           | Cron schedule to run the job that checks the certificates.                      |                                               |
-| TEAMS_WEBHOOK_URL                 | Teams Webhook URL to send the message to.                                       |                                               |
-| TEAMS_MESSAGE_URL                 | URL to be used as Card action in Teams                                          |                                               |
-| TEAMS_MESSAGE_TITLE               | Teams message title                                                             | Sharp Cert Manager Summary                    |
-| TEAMS_MESSAGE_BODY                | Teams message body                                                              | The following certificates were checked on %s |
+| WEBHOOK_URL                       | Webhook URL to send the message to.                                             |                                               |
+| MESSAGE_URL                       | URL to be used as Card action                                                   |                                               |
+| MESSAGE_TITLE                     | message  title                                                                  | Sharp Cert Manager Summary                    |
+| MESSAGE_BODY                      | Message body body                                                               | The following certificates were checked on %s |
 | WEB_HOST_PORT                     | host and port the web server will listen on                                     | :8000                                         |
 | TLS_CERT_FILE                     | Certificate used for TLS hosting                                                |                                               |
 | TLS_CERT_KEY_FILE                 | Certificate key used for TLS hosting                                            |                                               |
@@ -143,5 +149,5 @@ Below features are currentl being evaluated and/or built. If you have a suggesti
 - [x] Display certificate details
 - [x] Monitor certificate in background
 - [x] Teams WebHook integration
-- [ ] Slack WebHook integration
+- [x] Slack WebHook integration
 - [ ] Monitoring

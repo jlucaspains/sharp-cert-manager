@@ -121,7 +121,11 @@ func (c *CheckCertJob) execute() {
 		}
 	}
 
-	c.notifier.Notify(result)
+	err := c.notifier.Notify(result)
+
+	if err != nil {
+		log.Printf("Error sending notification: %s", err)
+	}
 }
 
 func (c *CheckCertJob) shouldNotify(model CertCheckNotification) bool {
