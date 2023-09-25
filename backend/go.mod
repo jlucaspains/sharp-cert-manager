@@ -3,7 +3,7 @@ module github.com/jlucaspains/sharp-cert-manager
 go 1.20
 
 require (
-	github.com/adhocore/gronx v1.6.5
+	github.com/adhocore/gronx v1.6.6
 	github.com/go-playground/validator/v10 v10.15.4
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
