@@ -118,6 +118,7 @@ docker run -it -p 8000:8000 `
     --env SITE_1=https://expired.badssl.com/ `
     --env CHECK_CERT_JOB_SCHEDULE=* * * * * `
     --env WEBHOOK_URL=ReplaceWithWebhookUrl `
+    --env WEBHOOK_TYPE=teams `
     jlucaspains/sharp-cert-manager
 ```
 
@@ -128,10 +129,11 @@ docker run -it -p 8000:8000 `
 | SITE_1..SITE_N                    | Websites to monitor.                                                            |                                               |
 | CHECK_CERT_JOB_SCHEDULE           | Cron schedule to run the job that checks the certificates.                      |                                               |
 | WEBHOOK_URL                       | Webhook URL to send the message to.                                             |                                               |
-| MESSAGE_URL                       | URL to be used as Card action                                                   |                                               |
-| MESSAGE_TITLE                     | message  title                                                                  | Sharp Cert Manager Summary                    |
+| MESSAGE_URL                       | URL to be used message action                                                   |                                               |
+| MESSAGE_TITLE                     | Message  title                                                                  | Sharp Cert Manager Summary                    |
 | MESSAGE_BODY                      | Message body body                                                               | The following certificates were checked on %s |
-| WEB_HOST_PORT                     | host and port the web server will listen on                                     | :8000                                         |
+| WEB_HOST_PORT                     | Host and port the web server will listen on                                     | :8000                                         |
+| WEBHOOK_TYPE                      | Defines whether teams or slack webhooks are used                                | teams                                         |
 | TLS_CERT_FILE                     | Certificate used for TLS hosting                                                |                                               |
 | TLS_CERT_KEY_FILE                 | Certificate key used for TLS hosting                                            |                                               |
 | CERT_WARNING_VALIDITY_DAYS        | Defines how many days from today a cert need to have to prevent a warning       | 30                                            |
