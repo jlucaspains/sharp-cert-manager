@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,13 +11,13 @@ import (
 	"strconv"
 	"syscall"
 
-	muxHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jlucaspains/sharp-cert-manager/handlers"
 	"github.com/jlucaspains/sharp-cert-manager/jobs"
 	"github.com/jlucaspains/sharp-cert-manager/midlewares"
 	"github.com/jlucaspains/sharp-cert-manager/shared"
 	"github.com/joho/godotenv"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 var checkCertJob = &jobs.CheckCertJob{}
@@ -85,10 +87,19 @@ func startWebServer(siteList []string) {
 	handlers.ExpirationWarningDays = getCertExpirationWarningDays()
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/check-url", handlers.CheckStatus).Methods("GET")
-	router.HandleFunc("/api/site-list", handlers.GetSiteList).Methods("GET")
-	router.HandleFunc("/health", handlers.HealthCheck).Methods("GET")
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
+
+	// handleFunc is a replacement for mux.HandleFunc
+	// which enriches the handler's HTTP instrumentation with the pattern as the http.route.
+	handleFunc := func(pattern string, method string, handlerFunc func(http.ResponseWriter, *http.Request)) {
+		handler := otelhttp.WithRouteTag(pattern, http.HandlerFunc(handlerFunc))
+		router.Handle(pattern, handler).Methods(method)
+	}
+
+	handleFunc("/api/check-url", "GET", handlers.CheckStatus)
+	handleFunc("/api/site-list", "GET", handlers.GetSiteList)
+	handleFunc("/health", "GET", handlers.HealthCheck)
+
+	router.PathPrefix("/").Handler(otelhttp.NewHandler(http.FileServer(http.Dir("./public/")), "html"))
 
 	logMiddleware := midlewares.NewLogMiddleware(log.Default())
 	router.Use(logMiddleware.Func())
@@ -111,11 +122,12 @@ func startWebServer(siteList []string) {
 		Addr: hostPort,
 	}
 
-	if env == "local" {
-		srv.Handler = muxHandlers.CORS()(router)
-	} else {
-		srv.Handler = router
-	}
+	// if env == "local" {
+	// 	srv.Handler = muxHandlers.CORS()(router)
+	// } else {
+	handler := otelhttp.NewHandler(router, "/")
+	srv.Handler = handler
+	// }
 
 	go func() {
 		var err error = nil
@@ -134,6 +146,18 @@ func startWebServer(siteList []string) {
 
 func main() {
 	loadEnv()
+
+	// Set up OpenTelemetry.
+	serviceName := "sharp-cert-manager"
+	serviceVersion := "1.0.0"
+	otelShutdown, err := shared.SetupOTelSDK(context.Background(), serviceName, serviceVersion)
+	if err != nil {
+		return
+	}
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		err = errors.Join(err, otelShutdown(context.Background()))
+	}()
 
 	siteList := shared.GetConfigSites()
 
