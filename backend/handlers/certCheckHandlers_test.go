@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/jlucaspains/sharp-cert-manager/models"
 	"github.com/jlucaspains/sharp-cert-manager/shared"
 	"github.com/joho/godotenv"
@@ -16,10 +16,10 @@ func TestGetSiteList(t *testing.T) {
 	godotenv.Load("../.test.env")
 	handlers := new(Handlers)
 	handlers.SiteList = shared.GetConfigSites()
-	router := mux.NewRouter()
-	router.HandleFunc("/site-list", handlers.GetSiteList).Methods("GET")
+	router := http.NewServeMux()
+	router.HandleFunc("GET /site-list", handlers.GetSiteList)
 
-	code, body, err := makeRequest[[]models.CheckListResult](router, "GET", "/site-list", nil)
+	code, body, err, _ := makeRequest[[]models.CheckListResult](router, "GET", "/site-list", nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)
@@ -29,11 +29,11 @@ func TestGetSiteList(t *testing.T) {
 func TestGetCheckStatus(t *testing.T) {
 	handlers := new(Handlers)
 
-	router := mux.NewRouter()
-	router.HandleFunc("/check-status", handlers.CheckStatus).Methods("GET")
+	router := http.NewServeMux()
+	router.HandleFunc("GET /check-status", handlers.CheckStatus)
 
 	url := fmt.Sprintf("/check-status?url=%s", "https://blog.lpains.net")
-	code, body, err := makeRequest[models.CertCheckResult](router, "GET", url, nil)
+	code, body, err, _ := makeRequest[models.CertCheckResult](router, "GET", url, nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)
@@ -47,11 +47,11 @@ func TestGetCheckStatus(t *testing.T) {
 func TestGetCheckStatusNoUrl(t *testing.T) {
 	handlers := new(Handlers)
 
-	router := mux.NewRouter()
-	router.HandleFunc("/check-status", handlers.CheckStatus).Methods("GET")
+	router := http.NewServeMux()
+	router.HandleFunc("GET /check-status", handlers.CheckStatus)
 
 	url := "/check-status"
-	code, body, err := makeRequest[models.ErrorResult](router, "GET", url, nil)
+	code, body, err, _ := makeRequest[models.ErrorResult](router, "GET", url, nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 400, code)

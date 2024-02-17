@@ -134,6 +134,7 @@
 >
 	{#each items as item}
 		<div
+		    data-testid="result-item"
 			class="check-item rounded shadow-lg shadow-gray-200 dark:shadow-gray-900 bg-white dark:bg-gray-800 duration-300 hover:-translate-y-1"
 			in:receive={{ key: item.name }}
 			out:send={{ key: item.name }}

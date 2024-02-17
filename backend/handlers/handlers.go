@@ -12,10 +12,16 @@ import (
 type Handlers struct {
 	SiteList              []string
 	ExpirationWarningDays int
+	CORSOrigins           string
 }
 
 func (h Handlers) JSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
+
+	if len(h.CORSOrigins) > 0 {
+		w.Header().Set("Access-Control-Allow-Origin", h.CORSOrigins)
+	}
+
 	w.WriteHeader(statusCode)
 	// convert data to json
 	result, _ := json.Marshal(data)
