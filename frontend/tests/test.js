@@ -7,7 +7,6 @@ test('index page has expected h1', async ({ page }) => {
 
 test('list of sites load', async ({ page }) => {
 	await page.goto('/');
-	const count = await page.getByTestId('result-item').count();
 	await expect(page.getByTestId('result-item')).toHaveCount(6)
 });
 
