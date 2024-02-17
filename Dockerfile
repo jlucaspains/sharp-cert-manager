@@ -1,5 +1,5 @@
 
-FROM golang:1.20.3-alpine3.17 AS goBuilder
+FROM golang:1.22.0-alpine3.19 AS goBuilder
 WORKDIR /app
 
 RUN apk update && apk add --no-cache ca-certificates && update-ca-certificates
@@ -21,7 +21,7 @@ RUN go mod download
 COPY backend/. .
 RUN go build -ldflags "-s -w" -o ./certChecker ./main.go
 
-FROM node:16-alpine AS svelteBuiler
+FROM node:18-alpine AS svelteBuiler
 WORKDIR /app
 COPY frontend/ ./
 RUN npm install --ignore-scripts

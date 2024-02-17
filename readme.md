@@ -152,4 +152,12 @@ Below features are currentl being evaluated and/or built. If you have a suggesti
 - [x] Monitor certificate in background
 - [x] Teams WebHook integration
 - [x] Slack WebHook integration
+- [ ] Issue and renew certs
+  - [ ] Use let's encrypt
+  - [ ] Use Acme DNS challenge
+  - [ ] Use LeGo
+  - [ ] Storage implementations
+    - [ ] Create Azure Key Vault implementation
+    - [ ] Create AWS Secrets Manager implementation
+    - [ ] Create GCP Cloud Key Management implementation
 - [ ] Monitoring
