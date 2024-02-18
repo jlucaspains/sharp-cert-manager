@@ -1,9 +1,9 @@
 package handlers
 
 import (
+	"net/http"
 	"testing"
 
-	"github.com/gorilla/mux"
 	"github.com/jlucaspains/sharp-cert-manager/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -11,10 +11,10 @@ import (
 func TestGetHealth(t *testing.T) {
 	handlers := new(Handlers)
 
-	router := mux.NewRouter()
-	router.HandleFunc("/health", handlers.HealthCheck).Methods("GET")
+	router := http.NewServeMux()
+	router.HandleFunc("GET /health", handlers.HealthCheck)
 
-	code, body, err := makeRequest[models.HealthResult](router, "GET", "/health", nil)
+	code, body, err, _ := makeRequest[models.HealthResult](router, "GET", "/health", nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)

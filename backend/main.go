@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"syscall"
 
-	muxHandlers "github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 	"github.com/jlucaspains/sharp-cert-manager/handlers"
 	"github.com/jlucaspains/sharp-cert-manager/jobs"
 	"github.com/jlucaspains/sharp-cert-manager/midlewares"
@@ -75,6 +73,15 @@ func getCertExpirationWarningDays() int {
 	return 30
 }
 
+func getCORSOrigins() string {
+	corsOrigins, ok := os.LookupEnv("CORS_ORIGINS")
+	if ok {
+		return corsOrigins
+	}
+
+	return ""
+}
+
 func stopJobs() {
 	checkCertJob.Stop()
 }
@@ -83,24 +90,28 @@ func startWebServer(siteList []string) {
 	handlers := &handlers.Handlers{}
 	handlers.SiteList = siteList
 	handlers.ExpirationWarningDays = getCertExpirationWarningDays()
+	handlers.CORSOrigins = getCORSOrigins()
 
-	router := mux.NewRouter()
-	router.HandleFunc("/api/check-url", handlers.CheckStatus).Methods("GET")
-	router.HandleFunc("/api/site-list", handlers.GetSiteList).Methods("GET")
-	router.HandleFunc("/health", handlers.HealthCheck).Methods("GET")
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
+	router := http.NewServeMux()
 
-	logMiddleware := midlewares.NewLogMiddleware(log.Default())
-	router.Use(logMiddleware.Func())
+	router.HandleFunc("GET /api/check-url", handlers.CheckStatus)
+	router.HandleFunc("GET /api/site-list", handlers.GetSiteList)
+	router.HandleFunc("GET /health", handlers.HealthCheck)
+
+	if handlers.CORSOrigins != "" {
+		router.HandleFunc("OPTIONS /api/", handlers.CORS)
+	}
+
+	router.Handle("/", http.FileServer(http.Dir("./public/")))
+
+	logRouter := midlewares.NewLogger(router)
 
 	hostPort, ok := os.LookupEnv("WEB_HOST_PORT")
 	if !ok {
 		hostPort = ":8000"
 	}
 
-	useTls := false
-	certFile, ok := os.LookupEnv("TLS_CERT_FILE")
-	useTls = ok
+	certFile, useTls := os.LookupEnv("TLS_CERT_FILE")
 
 	certKeyFile, ok := os.LookupEnv("TLS_CERT_KEY_FILE")
 	useTls = useTls && ok
@@ -111,11 +122,7 @@ func startWebServer(siteList []string) {
 		Addr: hostPort,
 	}
 
-	if env == "local" {
-		srv.Handler = muxHandlers.CORS()(router)
-	} else {
-		srv.Handler = router
-	}
+	srv.Handler = logRouter
 
 	go func() {
 		var err error = nil

@@ -4,7 +4,6 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
-		"all": "go run ../backend/main.go && vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",

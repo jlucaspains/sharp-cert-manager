@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -62,7 +61,7 @@ func TestErrorTranslationServerError(t *testing.T) {
 	assert.Equal(t, "Unknown error", result.Errors[0])
 }
 
-func makeRequest[K any | []any](router *mux.Router, method string, url string, body any) (code int, respBody *K, err error) {
+func makeRequest[K any | []any](router *http.ServeMux, method string, url string, body any) (code int, respBody *K, err error, headers http.Header) {
 	inputBody := ""
 
 	if body != nil {
@@ -75,7 +74,13 @@ func makeRequest[K any | []any](router *mux.Router, method string, url string, b
 	router.ServeHTTP(rr, req)
 
 	result := new(K)
-	err = json.Unmarshal(rr.Body.Bytes(), &result)
 
-	return rr.Code, result, err
+	switch any(result).(type) {
+	case *string:
+		// do nothing as we don't care about string
+	default:
+		err = json.Unmarshal(rr.Body.Bytes(), &result)
+	}
+
+	return rr.Code, result, err, rr.Result().Header
 }
