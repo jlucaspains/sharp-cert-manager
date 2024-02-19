@@ -7,19 +7,23 @@ import (
 	"time"
 
 	"github.com/jlucaspains/sharp-cert-manager/models"
-	"github.com/jlucaspains/sharp-cert-manager/shared"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetSiteList(t *testing.T) {
+var certList = []models.CheckCertItem{
+	{Name: "blog.lpains.net", Url: "https://blog.lpains.net", Type: models.CertCheckURL},
+}
+
+func TestGetCertList(t *testing.T) {
 	godotenv.Load("../.test.env")
 	handlers := new(Handlers)
-	handlers.SiteList = shared.GetConfigSites()
-	router := http.NewServeMux()
-	router.HandleFunc("GET /site-list", handlers.GetSiteList)
+	handlers.CertList = certList
 
-	code, body, err, _ := makeRequest[[]models.CheckListResult](router, "GET", "/site-list", nil)
+	router := http.NewServeMux()
+	router.HandleFunc("GET /cert-list", handlers.GetCertList)
+
+	code, body, err, _ := makeRequest[[]models.CheckCertItem](router, "GET", "/cert-list", nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)
@@ -28,11 +32,12 @@ func TestGetSiteList(t *testing.T) {
 
 func TestGetCheckStatus(t *testing.T) {
 	handlers := new(Handlers)
+	handlers.CertList = certList
 
 	router := http.NewServeMux()
-	router.HandleFunc("GET /check-status", handlers.CheckStatus)
+	router.HandleFunc("GET /check-cert", handlers.CheckStatus)
 
-	url := fmt.Sprintf("/check-status?url=%s", "https://blog.lpains.net")
+	url := fmt.Sprintf("/check-cert?name=%s", "blog.lpains.net")
 	code, body, err, _ := makeRequest[models.CertCheckResult](router, "GET", url, nil)
 
 	assert.Nil(t, err)
@@ -44,16 +49,30 @@ func TestGetCheckStatus(t *testing.T) {
 	assert.Contains(t, body.CertDnsNames, "blog.lpains.net")
 }
 
-func TestGetCheckStatusNoUrl(t *testing.T) {
+func TestGetCheckStatusNoName(t *testing.T) {
 	handlers := new(Handlers)
+	handlers.CertList = certList
 
 	router := http.NewServeMux()
-	router.HandleFunc("GET /check-status", handlers.CheckStatus)
+	router.HandleFunc("GET /check-cert", handlers.CheckStatus)
 
-	url := "/check-status"
-	code, body, err, _ := makeRequest[models.ErrorResult](router, "GET", url, nil)
+	code, body, err, _ := makeRequest[models.ErrorResult](router, "GET", "/check-cert", nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 400, code)
-	assert.Equal(t, "url is required", body.Errors[0])
+	assert.Equal(t, "name is required", body.Errors[0])
+}
+
+func TestGetCheckStatusInvalidName(t *testing.T) {
+	handlers := new(Handlers)
+	handlers.CertList = certList
+
+	router := http.NewServeMux()
+	router.HandleFunc("GET /check-cert", handlers.CheckStatus)
+
+	code, body, err, _ := makeRequest[models.ErrorResult](router, "GET", "/check-cert?name=invalid", nil)
+
+	assert.Nil(t, err)
+	assert.Equal(t, 400, code)
+	assert.Equal(t, "the provided cert name is not configured", body.Errors[0])
 }

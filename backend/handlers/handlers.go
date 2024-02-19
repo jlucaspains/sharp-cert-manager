@@ -10,7 +10,7 @@ import (
 )
 
 type Handlers struct {
-	SiteList              []string
+	CertList              []models.CheckCertItem
 	ExpirationWarningDays int
 	CORSOrigins           string
 }

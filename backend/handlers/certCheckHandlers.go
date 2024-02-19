@@ -3,31 +3,44 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"regexp"
+	"slices"
 
 	"github.com/jlucaspains/sharp-cert-manager/models"
 	"github.com/jlucaspains/sharp-cert-manager/shared"
 )
 
-func (h Handlers) GetSiteList(w http.ResponseWriter, r *http.Request) {
-	regx := regexp.MustCompile(`https?:\/\/`)
-	siteList := []models.CheckListResult{}
-	for _, url := range h.SiteList {
-		hostName := regx.ReplaceAllString(url, "")
-		siteList = append(siteList, models.CheckListResult{Name: hostName, Url: url})
-	}
+func (h Handlers) GetCertList(w http.ResponseWriter, r *http.Request) {
+	// regx := regexp.MustCompile(`https?:\/\/`)
+	// siteList := []models.CheckListResult{}
+	// for _, url := range h.SiteList {
+	// 	hostName := regx.ReplaceAllString(url, "")
+	// 	siteList = append(siteList, models.CheckListResult{Name: hostName, Url: url})
+	// }
 
-	h.JSON(w, http.StatusOK, siteList)
+	result := h.CertList
+
+	h.JSON(w, http.StatusOK, result)
 }
 
 func (h Handlers) CheckStatus(w http.ResponseWriter, r *http.Request) {
-	params := models.CertCheckParams{}
+	name, _ := h.getQueryParam(r, "name")
 
-	params.Url, _ = h.getQueryParam(r, "url")
+	log.Println("Received message for name: " + name)
 
-	log.Println("Received message for URL: " + params.Url)
+	if name == "" {
+		h.JSON(w, http.StatusBadRequest, &models.ErrorResult{Errors: []string{"name is required"}})
+		return
+	}
 
-	result, err := shared.CheckCertStatus(params, h.ExpirationWarningDays)
+	idx := slices.IndexFunc(h.CertList, func(c models.CheckCertItem) bool { return c.Name == name })
+
+	if idx < 0 {
+		h.JSON(w, http.StatusBadRequest, &models.ErrorResult{Errors: []string{"the provided cert name is not configured"}})
+		return
+	}
+
+	item := h.CertList[idx]
+	result, err := shared.CheckCertStatus(item, h.ExpirationWarningDays)
 
 	if err != nil {
 		h.JSON(w, http.StatusBadRequest, &models.ErrorResult{Errors: []string{err.Error()}})

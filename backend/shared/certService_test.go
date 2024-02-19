@@ -14,7 +14,7 @@ import (
 
 func TestGetCheckStatus(t *testing.T) {
 	url := "https://blog.lpains.net"
-	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
+	body, err := CheckCertStatus(models.CheckCertItem{Name: "blog.lpains.net", Url: url}, 30)
 
 	assert.Nil(t, err)
 	assert.True(t, body.IsValid)
@@ -26,7 +26,7 @@ func TestGetCheckStatus(t *testing.T) {
 
 func TestGetCheckWarning(t *testing.T) {
 	url := "https://blog.lpains.net"
-	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 10000)
+	body, err := CheckCertStatus(models.CheckCertItem{Name: "blog.lpains.net", Url: url}, 10000)
 
 	assert.Nil(t, err)
 	assert.True(t, body.IsValid)
@@ -39,15 +39,15 @@ func TestGetCheckWarning(t *testing.T) {
 
 func TestGetCheckStatusNoUrl(t *testing.T) {
 	url := ""
-	_, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
+	_, err := CheckCertStatus(models.CheckCertItem{Name: "", Url: url}, 30)
 
 	assert.NotNil(t, err)
-	assert.Equal(t, "url is required", err.Error())
+	assert.Equal(t, "name, url, and type are required", err.Error())
 }
 
 func TestGetCheckStatusHttp(t *testing.T) {
 	url := "http://blog.lpains.net"
-	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
+	body, err := CheckCertStatus(models.CheckCertItem{Name: "blog.lpains.net", Url: url}, 30)
 
 	assert.Nil(t, err)
 	assert.False(t, body.IsValid)
@@ -117,18 +117,23 @@ yjbTOuy8KoxNb15g3Ysesbw=
 	defer ts.Close()
 
 	url := ts.URL
-	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
+	body, err := CheckCertStatus(models.CheckCertItem{Name: "test", Url: url}, 30)
 
 	assert.Nil(t, err)
 	assert.False(t, body.IsValid)
 	assert.Equal(t, []string{"Hostname is not valid", "Certificate is not valid yet or expired", "SHA1 is not a secure signature algorithm"}, body.ValidationIssues)
 }
 
-func TestGetConfigSites(t *testing.T) {
+func TestGetConfigCerts(t *testing.T) {
 	godotenv.Load("../.test.env")
 
-	sites := GetConfigSites()
+	sites := GetConfigCerts()
 
-	assert.Len(t, sites, 1)
-	assert.Equal(t, "https://blog.lpains.net", sites[0])
+	assert.Len(t, sites, 2)
+	assert.Equal(t, "blog.lpains.net", sites[0].Name)
+	assert.Equal(t, "https://blog.lpains.net", sites[0].Url)
+	assert.Equal(t, models.CertCheckURL, sites[0].Type)
+	assert.Equal(t, "testfake.vault.azure.net/test-fake", sites[1].Name)
+	assert.Equal(t, "https://testfake.vault.azure.net/certificates/test-fake", sites[1].Url)
+	assert.Equal(t, models.CertCheckAzure, sites[1].Type)
 }
