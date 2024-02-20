@@ -89,7 +89,10 @@ func (c *CheckCertJob) Start() {
 
 func (c *CheckCertJob) Stop() {
 	c.running = false
-	c.ticker.Stop()
+
+	if c.ticker != nil {
+		c.ticker.Stop()
+	}
 }
 
 func (c *CheckCertJob) tryExecute() {

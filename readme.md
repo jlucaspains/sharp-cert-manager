@@ -127,6 +127,7 @@ docker run -it -p 8000:8000 `
 |-----------------------------------|---------------------------------------------------------------------------------|-----------------------------------------------|
 | ENV                               | Environment name. Used to configure the app to run in different environments.   |                                               |
 | SITE_1..SITE_N                    | Websites to monitor.                                                            |                                               |
+| AZUREKEYVAULT_1..AZUREKEYVAULT_N  | Azure key vault certificates URLs to monitor.                                   |                                               |
 | CHECK_CERT_JOB_SCHEDULE           | Cron schedule to run the job that checks the certificates.                      |                                               |
 | WEBHOOK_URL                       | Webhook URL to send the message to.                                             |                                               |
 | MESSAGE_URL                       | URL to be used message action                                                   |                                               |
@@ -152,6 +153,7 @@ Below features are currentl being evaluated and/or built. If you have a suggesti
 - [x] Monitor certificate in background
 - [x] Teams WebHook integration
 - [x] Slack WebHook integration
+- [x] Azure Key Vault integration
 - [ ] Issue and renew certs
   - [ ] Use let's encrypt
   - [ ] Use Acme DNS challenge

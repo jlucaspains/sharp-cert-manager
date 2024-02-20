@@ -34,7 +34,8 @@ var client = &http.Client{
 
 var mockAzureResult []byte = nil
 
-func GetConfigCerts() (result []models.CheckCertItem) {
+func GetConfigCerts() []models.CheckCertItem {
+	result := []models.CheckCertItem{}
 	for i := 1; true; i++ {
 		rawUrl, ok := os.LookupEnv(fmt.Sprintf("SITE_%d", i))
 		if !ok {
@@ -65,39 +66,39 @@ func GetConfigCerts() (result []models.CheckCertItem) {
 		result = append(result, models.CheckCertItem{Name: name, Url: rawUrl, Type: models.CertCheckAzure})
 	}
 
-	return
+	return result
 }
 
-func CheckCertStatus(cert models.CheckCertItem, expirationWarningDays int) (result *models.CertCheckResult, err error) {
+func CheckCertStatus(cert models.CheckCertItem, expirationWarningDays int) (*models.CertCheckResult, error) {
 	if cert.Name == "" || cert.Url == "" {
-		err = errors.New("name, url, and type are required")
-		return
+		err := errors.New("name, url, and type are required")
+		return nil, err
 	}
 
 	switch cert.Type {
 	case models.CertCheckURL:
-		result, err = checkCertByUrlStatus(cert.Name, cert.Url, expirationWarningDays)
+		return checkCertByUrlStatus(cert.Name, cert.Url, expirationWarningDays)
 	case models.CertCheckAzure:
-		result, err = checkAzureCertStatus(cert.Name, cert.Url, expirationWarningDays)
+		return checkAzureCertStatus(cert.Name, cert.Url, expirationWarningDays)
 	}
 
-	return
+	return nil, errors.New("invalid type")
 }
 
-func checkCertByUrlStatus(name string, url string, expirationWarningDays int) (result *models.CertCheckResult, err error) {
+func checkCertByUrlStatus(name string, url string, expirationWarningDays int) (*models.CertCheckResult, error) {
 	resp, err := client.Get(url)
 
 	if err != nil || resp.TLS == nil {
-		result = &models.CertCheckResult{Hostname: name, CertStartDate: time.Time{}, CertEndDate: time.Time{}, CertDnsNames: []string{}, IsValid: false}
-		return
+		result := &models.CertCheckResult{Hostname: name, CertStartDate: time.Time{}, CertEndDate: time.Time{}, CertDnsNames: []string{}, IsValid: false}
+		return result, err
 	}
 
-	result = prepareResult(resp.TLS.PeerCertificates[0], resp.TLS.PeerCertificates[1:], name, expirationWarningDays, false)
+	result := prepareResult(resp.TLS.PeerCertificates[0], resp.TLS.PeerCertificates[1:], name, expirationWarningDays, false)
 
-	return
+	return result, nil
 }
 
-func checkAzureCertStatus(name string, rawUrl string, expirationWarningDays int) (result *models.CertCheckResult, err error) {
+func checkAzureCertStatus(name string, rawUrl string, expirationWarningDays int) (*models.CertCheckResult, error) {
 	parsedUrl, _ := url.Parse(rawUrl)
 	keyVaultUrl := parsedUrl.Scheme + "://" + parsedUrl.Host
 	certName := strings.Split(parsedUrl.Path, "/")[2]
@@ -105,18 +106,18 @@ func checkAzureCertStatus(name string, rawUrl string, expirationWarningDays int)
 	cer, err := getCertFromKeyVault(keyVaultUrl, certName, name, expirationWarningDays)
 
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	cert, err := x509.ParseCertificate(cer)
 
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	result = prepareResult(cert, []*x509.Certificate{}, name, expirationWarningDays, true)
+	result := prepareResult(cert, []*x509.Certificate{}, name, expirationWarningDays, true)
 
-	return
+	return result, nil
 }
 
 func prepareResult(certificate *x509.Certificate, peerCertificates []*x509.Certificate, name string, expirationWarningDays int, skipHostNameValidation bool) *models.CertCheckResult {
@@ -138,7 +139,7 @@ func prepareResult(certificate *x509.Certificate, peerCertificates []*x509.Certi
 	}
 }
 
-func getCertFromKeyVault(keyVaultUrl string, certName string, hostName string, expirationWarningDays int) (cer []byte, err error) {
+func getCertFromKeyVault(keyVaultUrl string, certName string, hostName string, expirationWarningDays int) ([]byte, error) {
 	if mockAzureResult != nil {
 		return mockAzureResult, nil
 	}
@@ -146,13 +147,13 @@ func getCertFromKeyVault(keyVaultUrl string, certName string, hostName string, e
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	client, err := azcertificates.NewClient(keyVaultUrl, cred, nil)
 
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	log.Printf("Getting certificate from Azure Key Vault: %s", certName)
@@ -160,20 +161,19 @@ func getCertFromKeyVault(keyVaultUrl string, certName string, hostName string, e
 	response, err := client.GetCertificate(context.Background(), certName, "", nil)
 
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	cer = response.CER
-
-	return
+	return response.CER, nil
 }
 
-func validate(cert *x509.Certificate, hostName string, skipHostNameValidation bool) (isValid bool, errors []string) {
+func validate(cert *x509.Certificate, hostName string, skipHostNameValidation bool) (bool, []string) {
 	isHostNameValid := skipHostNameValidation || cert.VerifyHostname(hostName) == nil
 	areDatesValid := cert.NotBefore.Before(time.Now().UTC()) && cert.NotAfter.After(time.Now().UTC())
 	isSignatureValid := cert.SignatureAlgorithm.String() != "SHA1-RSA"
-	isValid = isHostNameValid && areDatesValid && isSignatureValid
+	isValid := isHostNameValid && areDatesValid && isSignatureValid
 
+	errors := []string{}
 	if !isHostNameValid {
 		errors = append(errors, "Hostname is not valid")
 	}
@@ -184,7 +184,7 @@ func validate(cert *x509.Certificate, hostName string, skipHostNameValidation bo
 		errors = append(errors, "SHA1 is not a secure signature algorithm")
 	}
 
-	return
+	return isValid, errors
 }
 
 func getOtherCerts(certs []*x509.Certificate) []models.OtherCert {
