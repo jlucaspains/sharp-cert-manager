@@ -10,13 +10,6 @@ import (
 )
 
 func (h Handlers) GetCertList(w http.ResponseWriter, r *http.Request) {
-	// regx := regexp.MustCompile(`https?:\/\/`)
-	// siteList := []models.CheckListResult{}
-	// for _, url := range h.SiteList {
-	// 	hostName := regx.ReplaceAllString(url, "")
-	// 	siteList = append(siteList, models.CheckListResult{Name: hostName, Url: url})
-	// }
-
 	result := h.CertList
 
 	h.JSON(w, http.StatusOK, result)

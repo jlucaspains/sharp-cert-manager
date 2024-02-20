@@ -19,6 +19,21 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azcertificates"
 )
 
+// http.client singleton
+var client = &http.Client{
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
+	// disabling security here is fine
+	// the purpose of the client is to pull certs
+	// no data exchange is happening
+	Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	},
+}
+
+var mockAzureResult []byte = nil
+
 func GetConfigCerts() (result []models.CheckCertItem) {
 	for i := 1; true; i++ {
 		rawUrl, ok := os.LookupEnv(fmt.Sprintf("SITE_%d", i))
@@ -70,17 +85,6 @@ func CheckCertStatus(cert models.CheckCertItem, expirationWarningDays int) (resu
 }
 
 func checkCertByUrlStatus(name string, url string, expirationWarningDays int) (result *models.CertCheckResult, err error) {
-	client := &http.Client{
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-		// disabling security here is fine
-		// the purpose of the client is to pull certs
-		// no data exchange is happening
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
-	}
 	resp, err := client.Get(url)
 
 	if err != nil || resp.TLS == nil {
@@ -88,25 +92,7 @@ func checkCertByUrlStatus(name string, url string, expirationWarningDays int) (r
 		return
 	}
 
-	certStartDate := resp.TLS.PeerCertificates[0].NotBefore
-	certEndDate := resp.TLS.PeerCertificates[0].NotAfter
-
-	isValid, errors := validate(resp.TLS.PeerCertificates[0], name, false)
-	result = &models.CertCheckResult{
-		Hostname:          name,
-		Issuer:            resp.TLS.PeerCertificates[0].Issuer.CommonName,
-		Signature:         resp.TLS.PeerCertificates[0].SignatureAlgorithm.String(),
-		CertStartDate:     certStartDate,
-		CertEndDate:       certEndDate,
-		CertDnsNames:      resp.TLS.PeerCertificates[0].DNSNames,
-		TLSVersion:        resp.TLS.Version,
-		IsCA:              resp.TLS.PeerCertificates[0].IsCA,
-		CommonName:        resp.TLS.PeerCertificates[0].Subject.CommonName,
-		IsValid:           isValid,
-		OtherCerts:        getOtherCerts(resp.TLS.PeerCertificates[1:]),
-		ValidationIssues:  errors,
-		ExpirationWarning: certEndDate.Before(time.Now().AddDate(0, 0, expirationWarningDays)),
-	}
+	result = prepareResult(resp.TLS.PeerCertificates[0], resp.TLS.PeerCertificates[1:], name, expirationWarningDays, false)
 
 	return
 }
@@ -115,6 +101,47 @@ func checkAzureCertStatus(name string, rawUrl string, expirationWarningDays int)
 	parsedUrl, _ := url.Parse(rawUrl)
 	keyVaultUrl := parsedUrl.Scheme + "://" + parsedUrl.Host
 	certName := strings.Split(parsedUrl.Path, "/")[2]
+
+	cer, err := getCertFromKeyVault(keyVaultUrl, certName, name, expirationWarningDays)
+
+	if err != nil {
+		return
+	}
+
+	cert, err := x509.ParseCertificate(cer)
+
+	if err != nil {
+		return
+	}
+
+	result = prepareResult(cert, []*x509.Certificate{}, name, expirationWarningDays, true)
+
+	return
+}
+
+func prepareResult(certificate *x509.Certificate, peerCertificates []*x509.Certificate, name string, expirationWarningDays int, skipHostNameValidation bool) *models.CertCheckResult {
+	isValid, errors := validate(certificate, name, skipHostNameValidation)
+	return &models.CertCheckResult{
+		Hostname:          name,
+		Issuer:            certificate.Issuer.CommonName,
+		Signature:         certificate.SignatureAlgorithm.String(),
+		CertStartDate:     certificate.NotBefore,
+		CertEndDate:       certificate.NotAfter,
+		CertDnsNames:      certificate.DNSNames,
+		TLSVersion:        uint16(certificate.Version),
+		IsCA:              certificate.IsCA,
+		CommonName:        certificate.Subject.CommonName,
+		IsValid:           isValid,
+		OtherCerts:        getOtherCerts(peerCertificates),
+		ValidationIssues:  errors,
+		ExpirationWarning: certificate.NotAfter.Before(time.Now().AddDate(0, 0, expirationWarningDays)),
+	}
+}
+
+func getCertFromKeyVault(keyVaultUrl string, certName string, hostName string, expirationWarningDays int) (cer []byte, err error) {
+	if mockAzureResult != nil {
+		return mockAzureResult, nil
+	}
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 
@@ -136,31 +163,7 @@ func checkAzureCertStatus(name string, rawUrl string, expirationWarningDays int)
 		return
 	}
 
-	cert, err := x509.ParseCertificate(response.CER)
-
-	if err != nil {
-		return
-	}
-
-	certStartDate := cert.NotBefore
-	certEndDate := cert.NotAfter
-
-	isValid, errors := validate(cert, name, true)
-	result = &models.CertCheckResult{
-		Hostname:          name,
-		Issuer:            cert.Issuer.CommonName,
-		Signature:         cert.SignatureAlgorithm.String(),
-		CertStartDate:     certStartDate,
-		CertEndDate:       certEndDate,
-		CertDnsNames:      cert.DNSNames,
-		TLSVersion:        uint16(cert.Version),
-		IsCA:              cert.IsCA,
-		CommonName:        cert.Subject.CommonName,
-		IsValid:           isValid,
-		OtherCerts:        []models.OtherCert{},
-		ValidationIssues:  errors,
-		ExpirationWarning: certEndDate.Before(time.Now().AddDate(0, 0, expirationWarningDays)),
-	}
+	cer = response.CER
 
 	return
 }
