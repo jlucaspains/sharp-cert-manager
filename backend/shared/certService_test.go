@@ -2,6 +2,7 @@ package shared
 
 import (
 	"crypto/tls"
+	"encoding/base64"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,9 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetCheckStatus(t *testing.T) {
+func TestGetCheckStatusUrl(t *testing.T) {
 	url := "https://blog.lpains.net"
-	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
+	body, err := CheckCertStatus(models.CheckCertItem{Name: "blog.lpains.net", Url: url, Type: models.CertCheckURL}, 30)
 
 	assert.Nil(t, err)
 	assert.True(t, body.IsValid)
@@ -24,9 +25,36 @@ func TestGetCheckStatus(t *testing.T) {
 	assert.Contains(t, body.CertDnsNames, "blog.lpains.net")
 }
 
+func TestGetCheckStatusAzure(t *testing.T) {
+	url := "https://testfake.vault.azure.net/certificates/test-fake"
+	name := "testfake.vault.azure.net/test-fake"
+	resultString := "MIIDSzCCAjOgAwIBAgIQK+dbFC5DRcCzqwHdipMafTANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwpscGFpbnMubmV0MB4XDTI0MDIxODE3Mjg0N1oXDTI1MDIxODE3Mzg0N1owFTETMBEGA1UEAxMKbHBhaW5zLm5ldDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMw2fBCebFSrfr/kRuQO5edseOcIREO1v1CYH250F5he39WTJ5Xd2XBw2S6em7icZFpuHAh+zBjOjhiz+ECr1mLauEarOpbHT85RINiXvY+dD7fM7db2kbV3I3TaYbqW1zLz8OFKLi1USc131VSA1kBLqn10AVOXfGPlFHig6XbUb2rGJyJXSBohL5/Vg6ySmR9ZPAvFbhbqLms3psnZxQaN8CAWUpdqH2yhPR26aPM8caEhWeXwWNST1MPbwMVZnSp7u2JG4J6Y5iE1GaE8XVNxoK7TMTct9D6+J/lmqCJCnJsYn+VRIZRFE+0YkZ8zUXxR9QyLXQwAivM+JgkwFikCAwEAAaOBljCBkzAOBgNVHQ8BAf8EBAMCBaAwCQYDVR0TBAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwFwYDVR0RBBAwDoIMKi5scGFpbnMubmV0MB8GA1UdIwQYMBaAFGSY7SSmwdQyCEDuhq5KnxJINEAqMB0GA1UdDgQWBBRkmO0kpsHUMghA7oauSp8SSDRAKjANBgkqhkiG9w0BAQsFAAOCAQEARdGGZJPr+0y7Ob9pw+C+ytJ0GZf33RkxqYI1Lq5rE7XJG8lrL1iN7mP4cnsTopLvgWJ2VCQP6iiQo/W8CC5PLMBRc1bNJmH8Z7FRUvEqWNVQoY5WYVQzC1E6GrPXOONMLeD6fnBTOnXYFOymOECDsFf/2WIdknP9pxNZ/rc9HVu14fz0/LjrsWvPAh/iglIYd0dQYLNB8kQlWM1SaXG77Fup3abrTJ0WRUqU/uXKqwwfMooFxvrlE5QBug7o8wtNFTYh0n4SwCqwS4M129go8oQy4Ilx8o6YlJBcxe9UGJIPKnecOX7byztqvp1sdglLAPeLS+bA2BW3MpCTCNxfFA=="
+	mockAzureResult, _ = base64.StdEncoding.DecodeString(resultString)
+
+	body, err := CheckCertStatus(models.CheckCertItem{Name: name, Url: url, Type: models.CertCheckAzure}, 30)
+
+	assert.Nil(t, err)
+	assert.True(t, body.IsValid)
+	assert.LessOrEqual(t, body.CertStartDate, time.Now())
+	assert.GreaterOrEqual(t, body.CertEndDate, time.Now())
+	assert.Contains(t, body.Hostname, "testfake.vault.azure.net/test-fake")
+	assert.Contains(t, body.CertDnsNames, "*.lpains.net")
+}
+
+func TestGetCheckStatusAzureInvalidAkv(t *testing.T) {
+	url := "https://testfake.vault.azure.net/certificates/test-fake"
+	name := "testfake.vault.azure.net/test-fake"
+	mockAzureResult = nil
+
+	_, err := CheckCertStatus(models.CheckCertItem{Name: name, Url: url, Type: models.CertCheckAzure}, 30)
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "no such host")
+}
+
 func TestGetCheckWarning(t *testing.T) {
 	url := "https://blog.lpains.net"
-	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 10000)
+	body, err := CheckCertStatus(models.CheckCertItem{Name: "blog.lpains.net", Url: url, Type: models.CertCheckURL}, 10000)
 
 	assert.Nil(t, err)
 	assert.True(t, body.IsValid)
@@ -39,15 +67,15 @@ func TestGetCheckWarning(t *testing.T) {
 
 func TestGetCheckStatusNoUrl(t *testing.T) {
 	url := ""
-	_, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
+	_, err := CheckCertStatus(models.CheckCertItem{Name: "", Url: url, Type: models.CertCheckURL}, 30)
 
 	assert.NotNil(t, err)
-	assert.Equal(t, "url is required", err.Error())
+	assert.Equal(t, "name, url, and type are required", err.Error())
 }
 
 func TestGetCheckStatusHttp(t *testing.T) {
 	url := "http://blog.lpains.net"
-	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
+	body, err := CheckCertStatus(models.CheckCertItem{Name: "blog.lpains.net", Url: url, Type: models.CertCheckURL}, 30)
 
 	assert.Nil(t, err)
 	assert.False(t, body.IsValid)
@@ -117,18 +145,23 @@ yjbTOuy8KoxNb15g3Ysesbw=
 	defer ts.Close()
 
 	url := ts.URL
-	body, err := CheckCertStatus(models.CertCheckParams{Url: url}, 30)
+	body, err := CheckCertStatus(models.CheckCertItem{Name: "test", Url: url, Type: models.CertCheckURL}, 30)
 
 	assert.Nil(t, err)
 	assert.False(t, body.IsValid)
 	assert.Equal(t, []string{"Hostname is not valid", "Certificate is not valid yet or expired", "SHA1 is not a secure signature algorithm"}, body.ValidationIssues)
 }
 
-func TestGetConfigSites(t *testing.T) {
+func TestGetConfigCerts(t *testing.T) {
 	godotenv.Load("../.test.env")
 
-	sites := GetConfigSites()
+	sites := GetConfigCerts()
 
-	assert.Len(t, sites, 1)
-	assert.Equal(t, "https://blog.lpains.net", sites[0])
+	assert.Len(t, sites, 2)
+	assert.Equal(t, "blog.lpains.net", sites[0].Name)
+	assert.Equal(t, "https://blog.lpains.net", sites[0].Url)
+	assert.Equal(t, models.CertCheckURL, sites[0].Type)
+	assert.Equal(t, "testfake.vault.azure.net/test-fake", sites[1].Name)
+	assert.Equal(t, "https://testfake.vault.azure.net/certificates/test-fake", sites[1].Url)
+	assert.Equal(t, models.CertCheckAzure, sites[1].Type)
 }

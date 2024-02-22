@@ -18,7 +18,7 @@ type CheckCertJob struct {
 	cron        string
 	ticker      *time.Ticker
 	gron        gronx.Gronx
-	siteList    []string
+	certList    []models.CheckCertItem
 	running     bool
 	notifier    Notifier
 	level       Level
@@ -46,7 +46,7 @@ type CertCheckNotification struct {
 	ExpirationWarning bool
 }
 
-func (c *CheckCertJob) Init(schedule string, level string, warningDays int, siteList []string, notifier Notifier) error {
+func (c *CheckCertJob) Init(schedule string, level string, warningDays int, certList []models.CheckCertItem, notifier Notifier) error {
 	c.gron = gronx.New()
 
 	if schedule == "" || !c.gron.IsValid(schedule) {
@@ -69,7 +69,7 @@ func (c *CheckCertJob) Init(schedule string, level string, warningDays int, site
 	}
 
 	c.cron = schedule
-	c.siteList = siteList
+	c.certList = certList
 	c.ticker = time.NewTicker(time.Minute)
 	c.notifier = notifier
 	c.level = levelValue
@@ -89,7 +89,10 @@ func (c *CheckCertJob) Start() {
 
 func (c *CheckCertJob) Stop() {
 	c.running = false
-	c.ticker.Stop()
+
+	if c.ticker != nil {
+		c.ticker.Stop()
+	}
 }
 
 func (c *CheckCertJob) tryExecute() {
@@ -104,16 +107,15 @@ func (c *CheckCertJob) tryExecute() {
 
 func (c *CheckCertJob) execute() {
 	result := []CertCheckNotification{}
-	for _, url := range c.siteList {
-		params := models.CertCheckParams{Url: url}
-		checkStatus, err := shared.CheckCertStatus(params, c.warningDays)
+	for _, item := range c.certList {
+		checkStatus, err := shared.CheckCertStatus(item, c.warningDays)
 
 		if err != nil {
 			log.Printf("Error checking cert status: %s", err)
 			continue
 		}
 
-		log.Printf("Cert status for %s: %t", url, checkStatus.IsValid)
+		log.Printf("Cert status for %s: %t", item.Name, checkStatus.IsValid)
 
 		item := c.getNotificationModel(checkStatus)
 		if c.shouldNotify(item) {
@@ -132,7 +134,7 @@ func (c *CheckCertJob) shouldNotify(model CertCheckNotification) bool {
 	return c.level == Info || !model.IsValid || (c.level == Warning && model.ExpirationWarning)
 }
 
-func (c *CheckCertJob) getNotificationModel(certificate models.CertCheckResult) CertCheckNotification {
+func (c *CheckCertJob) getNotificationModel(certificate *models.CertCheckResult) CertCheckNotification {
 	result := CertCheckNotification{
 		Hostname:          certificate.Hostname,
 		IsValid:           certificate.IsValid,

@@ -12,6 +12,7 @@ import (
 	"github.com/jlucaspains/sharp-cert-manager/handlers"
 	"github.com/jlucaspains/sharp-cert-manager/jobs"
 	"github.com/jlucaspains/sharp-cert-manager/midlewares"
+	"github.com/jlucaspains/sharp-cert-manager/models"
 	"github.com/jlucaspains/sharp-cert-manager/shared"
 	"github.com/joho/godotenv"
 )
@@ -43,7 +44,7 @@ func getJobNotifier() jobs.Notifier {
 	return result
 }
 
-func startJobs(siteList []string) {
+func startJobs(siteList []models.CheckCertItem) {
 	schedule, ok := os.LookupEnv("CHECK_CERT_JOB_SCHEDULE")
 
 	if ok {
@@ -86,16 +87,16 @@ func stopJobs() {
 	checkCertJob.Stop()
 }
 
-func startWebServer(siteList []string) {
+func startWebServer(siteList []models.CheckCertItem) {
 	handlers := &handlers.Handlers{}
-	handlers.SiteList = siteList
+	handlers.CertList = siteList
 	handlers.ExpirationWarningDays = getCertExpirationWarningDays()
 	handlers.CORSOrigins = getCORSOrigins()
 
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /api/check-url", handlers.CheckStatus)
-	router.HandleFunc("GET /api/site-list", handlers.GetSiteList)
+	router.HandleFunc("GET /api/check-cert", handlers.CheckStatus)
+	router.HandleFunc("GET /api/cert-list", handlers.GetCertList)
 	router.HandleFunc("GET /health", handlers.HealthCheck)
 
 	if handlers.CORSOrigins != "" {
@@ -142,7 +143,7 @@ func startWebServer(siteList []string) {
 func main() {
 	loadEnv()
 
-	siteList := shared.GetConfigSites()
+	siteList := shared.GetConfigCerts()
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)

@@ -24,7 +24,15 @@ type CertCheckResult struct {
 	ExpirationWarning bool        `json:"expirationWarning"`
 }
 
-type CheckListResult struct {
-	Name string `json:"name"`
-	Url  string `json:"url"`
+type CertCheckType int
+
+const (
+	CertCheckURL   CertCheckType = iota
+	CertCheckAzure CertCheckType = iota
+)
+
+type CheckCertItem struct {
+	Name string        `json:"name"`
+	Url  string        `json:"url"`
+	Type CertCheckType `json:"type"`
 }

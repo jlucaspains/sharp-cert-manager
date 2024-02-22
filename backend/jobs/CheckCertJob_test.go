@@ -3,6 +3,7 @@ package jobs
 import (
 	"testing"
 
+	"github.com/jlucaspains/sharp-cert-manager/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,13 +16,19 @@ func (m *mockNotifier) Notify(result []CertCheckNotification) error {
 	return nil
 }
 
+var certList = []models.CheckCertItem{
+	{Name: "blog.lpains.net", Url: "https://blog.lpains.net", Type: models.CertCheckURL},
+}
+
 func TestJobInit(t *testing.T) {
 	checkCertJob := &CheckCertJob{}
 
-	checkCertJob.Init("* * * * *", "", 1, []string{"https://blog.lpains.net"}, &mockNotifier{})
+	checkCertJob.Init("* * * * *", "", 1, certList, &mockNotifier{})
 
 	assert.Equal(t, "* * * * *", checkCertJob.cron)
-	assert.Equal(t, "https://blog.lpains.net", checkCertJob.siteList[0])
+	assert.Equal(t, "https://blog.lpains.net", checkCertJob.certList[0].Url)
+	assert.Equal(t, "blog.lpains.net", checkCertJob.certList[0].Name)
+	assert.Equal(t, models.CertCheckURL, checkCertJob.certList[0].Type)
 
 	checkCertJob.ticker.Stop()
 }
@@ -29,10 +36,12 @@ func TestJobInit(t *testing.T) {
 func TestJobInitDefaultWarningDays(t *testing.T) {
 	checkCertJob := &CheckCertJob{}
 
-	checkCertJob.Init("* * * * *", "", 0, []string{"https://blog.lpains.net"}, &mockNotifier{})
+	checkCertJob.Init("* * * * *", "", 0, certList, &mockNotifier{})
 
 	assert.Equal(t, "* * * * *", checkCertJob.cron)
-	assert.Equal(t, "https://blog.lpains.net", checkCertJob.siteList[0])
+	assert.Equal(t, "blog.lpains.net", checkCertJob.certList[0].Name)
+	assert.Equal(t, "https://blog.lpains.net", checkCertJob.certList[0].Url)
+	assert.Equal(t, models.CertCheckURL, checkCertJob.certList[0].Type)
 	assert.Equal(t, 30, checkCertJob.warningDays)
 
 	checkCertJob.ticker.Stop()
@@ -41,7 +50,7 @@ func TestJobInitDefaultWarningDays(t *testing.T) {
 func TestJobInitBadCron(t *testing.T) {
 	checkCertJob := &CheckCertJob{}
 
-	err := checkCertJob.Init("* * * *", "", 0, []string{"https://blog.lpains.net"}, &mockNotifier{})
+	err := checkCertJob.Init("* * * *", "", 0, certList, &mockNotifier{})
 
 	assert.Equal(t, "a valid cron schedule is required", err.Error())
 }
@@ -49,7 +58,7 @@ func TestJobInitBadCron(t *testing.T) {
 func TestJobInitBadNotifier(t *testing.T) {
 	checkCertJob := &CheckCertJob{}
 
-	err := checkCertJob.Init("* * * * *", "", 0, []string{"https://blog.lpains.net"}, nil)
+	err := checkCertJob.Init("* * * * *", "", 0, certList, nil)
 
 	assert.Equal(t, "a valid notifier is required", err.Error())
 }
@@ -57,7 +66,7 @@ func TestJobInitBadNotifier(t *testing.T) {
 func TestJobStartStop(t *testing.T) {
 	checkCertJob := &CheckCertJob{}
 
-	err := checkCertJob.Init("* * * * *", "", 0, []string{"https://blog.lpains.net"}, &mockNotifier{})
+	err := checkCertJob.Init("* * * * *", "", 0, certList, &mockNotifier{})
 	assert.Nil(t, err)
 	checkCertJob.Start()
 	assert.True(t, checkCertJob.running)
@@ -68,7 +77,7 @@ func TestJobStartStop(t *testing.T) {
 func TestTryExecuteNotDue(t *testing.T) {
 	checkCertJob := &CheckCertJob{}
 	notifier := &mockNotifier{}
-	checkCertJob.Init("0 0 1 1 1", "", 0, []string{"https://blog.lpains.net"}, &mockNotifier{})
+	checkCertJob.Init("0 0 1 1 1", "", 0, certList, &mockNotifier{})
 	checkCertJob.notifier = notifier
 	checkCertJob.tryExecute()
 
@@ -78,7 +87,7 @@ func TestTryExecuteNotDue(t *testing.T) {
 func TestTryExecuteDue(t *testing.T) {
 	checkCertJob := &CheckCertJob{}
 	notifier := &mockNotifier{}
-	checkCertJob.Init("* * * * *", "", 0, []string{"https://blog.lpains.net"}, &mockNotifier{})
+	checkCertJob.Init("* * * * *", "", 0, certList, &mockNotifier{})
 	checkCertJob.notifier = notifier
 	checkCertJob.tryExecute()
 
@@ -88,7 +97,7 @@ func TestTryExecuteDue(t *testing.T) {
 func TestTryExecuteDueWarning(t *testing.T) {
 	checkCertJob := &CheckCertJob{}
 	notifier := &mockNotifier{}
-	checkCertJob.Init("* * * * *", "", 10000, []string{"https://blog.lpains.net"}, &mockNotifier{})
+	checkCertJob.Init("* * * * *", "", 10000, certList, &mockNotifier{})
 	checkCertJob.notifier = notifier
 	checkCertJob.tryExecute()
 

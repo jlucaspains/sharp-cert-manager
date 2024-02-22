@@ -49,7 +49,7 @@
 	});
 
 	onMount(async () => {
-		const res = await fetch(`${PUBLIC_API_BASE_PATH}/site-list`);
+		const res = await fetch(`${PUBLIC_API_BASE_PATH}/cert-list`);
 		/**
 		 * @type {{url: string, name: string}[]}
 		 */
@@ -83,7 +83,7 @@
 	 * @param {Item} item
 	 */
 	function loadItem(item) {
-		fetch(`${PUBLIC_API_BASE_PATH}/check-url?url=${item.url}`)
+		fetch(`${PUBLIC_API_BASE_PATH}/check-cert?name=${item.name}`)
 			.then((res) => res.json())
 			.then((data) => {
 				item.issuer = data.issuer;
