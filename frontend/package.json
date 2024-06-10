@@ -18,17 +18,17 @@
 		"@sveltejs/adapter-static": "^3.0.1",
 		"@sveltejs/kit": "^2.5.10",
 		"autoprefixer": "^10.4.19",
-		"eslint": "^9.3.0",
+		"eslint": "^9.4.0",
 		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-svelte": "^2.39.0",
+		"eslint-plugin-svelte": "^2.39.2",
 		"postcss": "^8.4.38",
-		"prettier": "^3.2.5",
-		"prettier-plugin-svelte": "^3.2.3",
-		"svelte": "^4.2.17",
-		"svelte-check": "^3.7.1",
-		"tailwindcss": "^3.4.3",
+		"prettier": "^3.3.1",
+		"prettier-plugin-svelte": "^3.2.4",
+		"svelte": "^4.2.18",
+		"svelte-check": "^3.8.0",
+		"tailwindcss": "^3.4.4",
 		"typescript": "^5.4.5",
-		"vite": "^5.2.11"
+		"vite": "^5.2.13"
 	},
 	"type": "module"
 }
