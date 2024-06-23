@@ -17,7 +17,7 @@ type Notifier interface {
 type CheckCertJob struct {
 	cron        string
 	ticker      *time.Ticker
-	gron        gronx.Gronx
+	gron        *gronx.Gronx
 	certList    []models.CheckCertItem
 	running     bool
 	notifier    Notifier
