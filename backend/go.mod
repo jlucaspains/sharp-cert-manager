@@ -3,7 +3,7 @@ module github.com/jlucaspains/sharp-cert-manager
 go 1.22
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.6.0
+	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.7.0
 	github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azcertificates v1.1.0
 	github.com/adhocore/gronx v1.8.1
 	github.com/go-playground/validator/v10 v10.22.0
