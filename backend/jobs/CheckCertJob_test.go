@@ -94,6 +94,16 @@ func TestTryExecuteDue(t *testing.T) {
 	assert.True(t, notifier.executed)
 }
 
+func TestExecuteNow(t *testing.T) {
+	checkCertJob := &CheckCertJob{}
+	notifier := &mockNotifier{}
+	checkCertJob.Init("* * * * *", "", 0, certList, &mockNotifier{})
+	checkCertJob.notifier = notifier
+	checkCertJob.RunNow()
+
+	assert.True(t, notifier.executed)
+}
+
 func TestTryExecuteDueWarning(t *testing.T) {
 	checkCertJob := &CheckCertJob{}
 	notifier := &mockNotifier{}

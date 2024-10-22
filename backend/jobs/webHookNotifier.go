@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"text/template"
 	"time"
 )
@@ -15,6 +16,7 @@ type WebHookNotifier struct {
 	NotificationTitle string
 	NotificationBody  string
 	NotificationUrl   string
+	Mentions          []string
 	parsedTemplate    *template.Template
 	httpClient        *http.Client
 }
@@ -24,9 +26,10 @@ type WebHookNotificationCard struct {
 	Description     string
 	NotificationUrl string
 	Items           []CertCheckNotification
+	Mentions        []string
 }
 
-func (m *WebHookNotifier) Init(notifierType NotifierType, webhookUrl string, notificationTitle string, notificationBody string, notificationUrl string) {
+func (m *WebHookNotifier) Init(notifierType NotifierType, webhookUrl string, notificationTitle string, notificationBody string, notificationUrl string, messageMentions string) {
 	if notificationTitle == "" {
 		notificationTitle = "Sharp Cert Manager Summary"
 	}
@@ -40,6 +43,15 @@ func (m *WebHookNotifier) Init(notifierType NotifierType, webhookUrl string, not
 	m.NotificationBody = notificationBody
 	m.NotificationUrl = notificationUrl
 	m.WebhookUrl = webhookUrl
+	m.Mentions = parseMentions(messageMentions)
+}
+
+func parseMentions(mentions string) []string {
+	if mentions == "" {
+		return []string{}
+	}
+
+	return strings.Split(mentions, ",")
 }
 
 func (m *WebHookNotifier) Notify(result []CertCheckNotification) error {
@@ -50,6 +62,7 @@ func (m *WebHookNotifier) Notify(result []CertCheckNotification) error {
 		Description:     m.NotificationBody,
 		NotificationUrl: m.NotificationUrl,
 		Items:           result,
+		Mentions:        m.Mentions,
 	}
 
 	var templateBody bytes.Buffer
@@ -79,7 +92,11 @@ func (m *WebHookNotifier) Notify(result []CertCheckNotification) error {
 
 func (m *WebHookNotifier) getTemplate() *template.Template {
 	if m.parsedTemplate == nil {
-		m.parsedTemplate, _ = template.New("template").Parse(NotificationTemplates[m.NotifierType])
+		m.parsedTemplate, _ = template.New("template").Funcs(template.FuncMap{
+			"split": func(s, sep string) []string {
+				return strings.Split(s, sep)
+			},
+		}).Parse(NotificationTemplates[m.NotifierType])
 	}
 
 	return m.parsedTemplate

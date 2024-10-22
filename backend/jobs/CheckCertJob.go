@@ -78,6 +78,10 @@ func (c *CheckCertJob) Init(schedule string, level string, warningDays int, cert
 	return nil
 }
 
+func (c *CheckCertJob) RunNow() {
+	c.execute()
+}
+
 func (c *CheckCertJob) Start() {
 	c.running = true
 	go func() {

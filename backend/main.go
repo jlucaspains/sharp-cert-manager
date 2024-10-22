@@ -38,8 +38,9 @@ func getJobNotifier() jobs.Notifier {
 	messageUrl, _ := os.LookupEnv("MESSAGE_URL")
 	messageTitle, _ := os.LookupEnv("MESSAGE_TITLE")
 	messageBody, _ := os.LookupEnv("MESSAGE_BODY")
+	messageMentions, _ := os.LookupEnv("MESSAGE_MENTIONS")
 
-	result.Init(jobs.Notifiers[webhookType], WebhookUrl, messageTitle, messageBody, messageUrl)
+	result.Init(jobs.Notifiers[webhookType], WebhookUrl, messageTitle, messageBody, messageUrl, messageMentions)
 
 	return result
 }
@@ -88,6 +89,13 @@ func stopJobs() {
 }
 
 func startWebServer(siteList []models.CheckCertItem) {
+	headless, ok := os.LookupEnv("HEADLESS")
+
+	if !ok || headless == "true" {
+		log.Println("Running in headless mode. Skipping web server start.")
+		return
+	}
+
 	handlers := &handlers.Handlers{}
 	handlers.CertList = siteList
 	handlers.ExpirationWarningDays = getCertExpirationWarningDays()
@@ -140,6 +148,28 @@ func startWebServer(siteList []models.CheckCertItem) {
 	log.Print("Web Server Started")
 }
 
+func runOnce(siteList []models.CheckCertItem, done chan os.Signal) {
+	schedule, _ := os.LookupEnv("CHECK_CERT_JOB_SCHEDULE")
+	headless, _ := os.LookupEnv("HEADLESS")
+
+	if schedule != "" && headless != "true" {
+		return
+	}
+
+	log.Print("Running the checkCertJob once")
+	level, _ := os.LookupEnv("CHECK_CERT_JOB_NOTIFICATION_LEVEL")
+	warningDays := getCertExpirationWarningDays()
+	err := checkCertJob.Init("* * * * *", level, warningDays, siteList, getJobNotifier())
+	if err == nil {
+		checkCertJob.RunNow()
+	} else {
+		log.Fatalf("Error running the checkCertJob once: %s", err)
+	}
+
+	// We don't want to wait on anything so do a graceful exist
+	done <- syscall.SIGQUIT
+}
+
 func main() {
 	loadEnv()
 
@@ -150,6 +180,7 @@ func main() {
 
 	startWebServer(siteList)
 	startJobs(siteList)
+	runOnce(siteList, done)
 
 	<-done
 	log.Print("Stopping jobs...")

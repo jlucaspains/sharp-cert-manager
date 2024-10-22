@@ -60,7 +60,13 @@ const teamsMessageTemplate = `{
 					"size": "large",
 					"weight": "bolder",
 					"wrap": true
-				},
+				},{{- if gt (len .Mentions) 0}}
+				{
+					"type": "TextBlock",
+					"text": "Attention: {{ range $index, $element := .Mentions}}{{if $index}}, {{end}}<at>{{$element}}</at>{{end}}",
+					"isSubtle": true,
+					"wrap": true
+				},{{- end}}
 				{
 					"type": "TextBlock",
 					"text": "{{ .Description }}",
@@ -116,7 +122,24 @@ const teamsMessageTemplate = `{
 					"title": "View Details",
 					"url": "{{ .NotificationUrl }}"
 				}
-			]{{end}}
+			]{{end}}{{if gt (len .Mentions) 0}},
+			"msteams": {
+                "entities": [
+					{{- $max := len (slice .Mentions 1)}}
+					{{- range $i, $item := .Mentions}}
+					{{- $shortNames := split $item "@"}}
+                    {
+						"type": "mention",
+						"text": "<at>{{$item}}</at>",
+						"mentioned": {
+							"id": "{{$item}}",
+							"name": "{{ index $shortNames 0 }}"
+						}
+					}{{if lt $i $max}},{{end}}
+					{{- end}}
+				]
+			}
+			{{- end}}
 		}
 	}]
 }`
