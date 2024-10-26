@@ -1,5 +1,5 @@
 # sharp-cert-manager
-This project aims to provide a simple tool to monitor certificate validity. It is composed of a golang backend API built using GO http server and a frontend build using [Svelte](https://svelte.dev/).
+This project aims to provide a simple tool to monitor certificate validity. It is composed of a [GO](https://go.dev/) backend API built using GO http server and a frontend build using [Svelte](https://svelte.dev/).
 
 ![Demo frontend image](/docs/demo.jpeg)
 
@@ -139,6 +139,7 @@ docker run -it -p 8000:8000 `
 | TLS_CERT_KEY_FILE                 | Certificate key used for TLS hosting                                            |                                               |
 | CERT_WARNING_VALIDITY_DAYS        | Defines how many days from today a cert need to have to prevent a warning       | 30                                            |
 | CHECK_CERT_JOB_NOTIFICATION_LEVEL | Defines minimum notification level for jobs. Values are Info, Warning, or Error | Warning                                       |
+| HEADLESS                          | If set to "true", the web server does not start.                                |                                               |
 
 ## Security considerations
 This app is intended to run in private environments or at a minimum be behind a secure gateway with proper TLS and authentication to ensure it is not improperly used.
@@ -154,12 +155,31 @@ Below features are currentl being evaluated and/or built. If you have a suggesti
 - [x] Teams WebHook integration
 - [x] Slack WebHook integration
 - [x] Azure Key Vault integration
-- [ ] Issue and renew certs
-  - [ ] Use let's encrypt
-  - [ ] Use Acme DNS challenge
-  - [ ] Use LeGo
-  - [ ] Storage implementations
-    - [ ] Create Azure Key Vault implementation
-    - [ ] Create AWS Secrets Manager implementation
-    - [ ] Create GCP Cloud Key Management implementation
-- [ ] Monitoring
+
+## Headless Mode
+The `HEADLESS` environment variable is used to determine if the web server should start. If `HEADLESS` is set to "true", the web server does not start. This can be useful for running the job task only once and exiting with a success code.
+
+To run the job task only once and exit with a success code, set `HEADLESS` to "true" and `CHECK_CERT_JOB_SCHEDULE` to an empty value.
+
+Example: Running as a container app job using az cli
+```bash
+az containerapp job create `
+    --name sharp-cert-manager `
+    --resource-group <resource-group> `
+    --image jlucaspains/sharp-cert-manager `
+    --trigger-type "Schedule" `
+    --replica-timeout 1800 `
+    --cpu "0.25" --memory "0.5Gi" `
+    --cron-expression "0 8 * * 1" `
+    --replica-retry-limit 1 `
+    --parallelism 1 `
+    --replica-completion-count 1 `
+    --env-vars ENV=DEV `
+SITE_1=https://blog.lpains.net/ `
+CERT_WARNING_VALIDITY_DAYS=90 `
+HEADLESS=true `
+WEBHOOK_TYPE=teams `
+WEBHOOK_URL=<webhook-url> `
+MESSAGE_MENTIONS=<user@domain.com>
+CHECK_CERT_JOB_NOTIFICATION_LEVEL=Info
+```
