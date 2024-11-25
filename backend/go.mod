@@ -4,18 +4,18 @@ go 1.22
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.8.0
-	github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azcertificates v1.2.0
-	github.com/adhocore/gronx v1.19.3
-	github.com/go-playground/validator/v10 v10.22.1
+	github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azcertificates v1.3.0
+	github.com/adhocore/gronx v1.19.5
+	github.com/go-playground/validator/v10 v10.23.0
 	github.com/joho/godotenv v1.5.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.16.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.10.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/internal v1.1.0 // indirect
-	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2 // indirect
+	github.com/AzureAD/microsoft-authentication-library-for-go v1.3.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
