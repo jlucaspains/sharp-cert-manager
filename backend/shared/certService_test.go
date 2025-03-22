@@ -1,10 +1,15 @@
 package shared
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/tls"
-	"encoding/base64"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -28,17 +33,53 @@ func TestGetCheckStatusUrl(t *testing.T) {
 func TestGetCheckStatusAzure(t *testing.T) {
 	url := "https://testfake.vault.azure.net/certificates/test-fake"
 	name := "testfake.vault.azure.net/test-fake"
-	resultString := "MIIDSzCCAjOgAwIBAgIQK+dbFC5DRcCzqwHdipMafTANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwpscGFpbnMubmV0MB4XDTI0MDIxODE3Mjg0N1oXDTI1MDIxODE3Mzg0N1owFTETMBEGA1UEAxMKbHBhaW5zLm5ldDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMw2fBCebFSrfr/kRuQO5edseOcIREO1v1CYH250F5he39WTJ5Xd2XBw2S6em7icZFpuHAh+zBjOjhiz+ECr1mLauEarOpbHT85RINiXvY+dD7fM7db2kbV3I3TaYbqW1zLz8OFKLi1USc131VSA1kBLqn10AVOXfGPlFHig6XbUb2rGJyJXSBohL5/Vg6ySmR9ZPAvFbhbqLms3psnZxQaN8CAWUpdqH2yhPR26aPM8caEhWeXwWNST1MPbwMVZnSp7u2JG4J6Y5iE1GaE8XVNxoK7TMTct9D6+J/lmqCJCnJsYn+VRIZRFE+0YkZ8zUXxR9QyLXQwAivM+JgkwFikCAwEAAaOBljCBkzAOBgNVHQ8BAf8EBAMCBaAwCQYDVR0TBAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwFwYDVR0RBBAwDoIMKi5scGFpbnMubmV0MB8GA1UdIwQYMBaAFGSY7SSmwdQyCEDuhq5KnxJINEAqMB0GA1UdDgQWBBRkmO0kpsHUMghA7oauSp8SSDRAKjANBgkqhkiG9w0BAQsFAAOCAQEARdGGZJPr+0y7Ob9pw+C+ytJ0GZf33RkxqYI1Lq5rE7XJG8lrL1iN7mP4cnsTopLvgWJ2VCQP6iiQo/W8CC5PLMBRc1bNJmH8Z7FRUvEqWNVQoY5WYVQzC1E6GrPXOONMLeD6fnBTOnXYFOymOECDsFf/2WIdknP9pxNZ/rc9HVu14fz0/LjrsWvPAh/iglIYd0dQYLNB8kQlWM1SaXG77Fup3abrTJ0WRUqU/uXKqwwfMooFxvrlE5QBug7o8wtNFTYh0n4SwCqwS4M129go8oQy4Ilx8o6YlJBcxe9UGJIPKnecOX7byztqvp1sdglLAPeLS+bA2BW3MpCTCNxfFA=="
-	mockAzureResult, _ = base64.StdEncoding.DecodeString(resultString)
+	mockAzureResult = createCertificate()
+
+	err := os.WriteFile("D:\\cert.cer", mockAzureResult, os.FileMode(0644))
 
 	body, err := CheckCertStatus(models.CheckCertItem{Name: name, Url: url, Type: models.CertCheckAzure}, 30)
 
 	assert.Nil(t, err)
 	assert.True(t, body.IsValid)
-	assert.LessOrEqual(t, body.CertStartDate, time.Now())
-	assert.GreaterOrEqual(t, body.CertEndDate, time.Now())
+	assert.LessOrEqual(t, body.CertStartDate, time.Now().UTC())
+	assert.GreaterOrEqual(t, body.CertEndDate, time.Now().UTC())
 	assert.Contains(t, body.Hostname, "testfake.vault.azure.net/test-fake")
 	assert.Contains(t, body.CertDnsNames, "*.lpains.net")
+}
+
+func createCertificate() []byte {
+	keyBytes, err := rsa.GenerateKey(rand.Reader, 1024)
+
+	if err != nil {
+		panic(err)
+	}
+
+	if err := keyBytes.Validate(); err != nil {
+		panic(err)
+	}
+
+	template := &x509.Certificate{
+		SerialNumber: big.NewInt(1),
+		Subject: pkix.Name{
+			Country:            []string{"EN"},
+			Organization:       []string{"org"},
+			OrganizationalUnit: []string{"org"},
+			Locality:           []string{"city"},
+			Province:           []string{"province"},
+			CommonName:         "name",
+		},
+		DNSNames:  []string{"*.lpains.net"},
+		NotBefore: time.Now().Add(-time.Hour * 24),
+		NotAfter:  time.Now().Add(time.Hour * 24 * 60),
+	}
+
+	derBytes, err := x509.CreateCertificate(rand.Reader, template, template, &keyBytes.PublicKey, keyBytes)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return derBytes
 }
 
 func TestGetCheckStatusAzureInvalidAkv(t *testing.T) {
