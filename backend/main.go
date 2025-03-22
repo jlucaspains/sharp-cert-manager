@@ -152,7 +152,7 @@ func runOnce(siteList []models.CheckCertItem, done chan os.Signal) {
 	schedule, _ := os.LookupEnv("CHECK_CERT_JOB_SCHEDULE")
 	headless, _ := os.LookupEnv("HEADLESS")
 
-	if schedule != "" && headless != "true" {
+	if schedule != "" || headless != "true" {
 		return
 	}
 
