@@ -28,6 +28,17 @@ func (h Handlers) JSON(w http.ResponseWriter, statusCode int, data interface{}) 
 	w.Write(result)
 }
 
+func (h Handlers) HTML(w http.ResponseWriter, statusCode int, data string) {
+	w.Header().Set("Content-Type", "text/html")
+
+	if len(h.CORSOrigins) > 0 {
+		w.Header().Set("Access-Control-Allow-Origin", h.CORSOrigins)
+	}
+
+	w.WriteHeader(statusCode)
+	w.Write([]byte(data))
+}
+
 func (h Handlers) getQueryParam(r *http.Request, key string) (string, error) {
 	if param := r.URL.Query()[key]; param != nil {
 		return param[0], nil

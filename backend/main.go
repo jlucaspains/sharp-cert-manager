@@ -111,7 +111,9 @@ func startWebServer(siteList []models.CheckCertItem) {
 		router.HandleFunc("OPTIONS /api/", handlers.CORS)
 	}
 
-	router.Handle("/", http.FileServer(http.Dir("./public/")))
+	router.HandleFunc("GET /", handlers.Index)
+	router.HandleFunc("GET /fragment", handlers.Fragment)
+	router.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public/"))))
 
 	logRouter := midlewares.NewLogger(router)
 
