@@ -37,7 +37,7 @@ git clone https://github.com/jlucaspains/sharp-cert-manager.git
 First, Install the dependencies:
 
 ```bash
-cd sharp-cert-manager/backend
+cd sharp-cert-manager/src
 go mod download
 ```
 

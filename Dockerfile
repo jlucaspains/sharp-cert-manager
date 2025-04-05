@@ -15,10 +15,10 @@ RUN adduser \
     --uid "${UID}" \    
     "${USER}"
     
-COPY backend/go.mod go.mod
-COPY backend/go.sum go.sum
+COPY src/go.mod go.mod
+COPY src/go.sum go.sum
 RUN go mod download
-COPY backend/. .
+COPY src/. .
 RUN go build -ldflags "-s -w" -o ./certChecker ./main.go
 
 FROM scratch AS runner

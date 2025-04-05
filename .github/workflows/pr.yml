@@ -66,13 +66,13 @@ jobs:
 
       - name: Pull dependencies
         run: go mod download
-        working-directory: ./backend
+        working-directory: ./src
       
       - name: Test
         run: go test -cover ./... > test-result.txt
-        working-directory: ./backend
+        working-directory: ./src
       
       - name: Pull request comment
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          path: ./backend/test-result.txt
+          path: ./src/test-result.txt
