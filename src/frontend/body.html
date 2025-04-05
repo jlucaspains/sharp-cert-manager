@@ -1,0 +1,21 @@
+<div style="display: contents">
+    <div class="app">
+        <header class="w-full shadow-sm body-font">
+            <div class="flex flex-col flex-wrap items-center p-5 mx-auto">
+                <div class="top-bar-title mb-4 text-white">sharp-cert-manager</div>
+            </div>
+        </header>
+
+        <main>
+            <div class="grid grid-flow-row gap-8 mt-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {{- range . }}
+                <div data-testid="result-item"
+                    class="check-item rounded shadow-lg shadow-gray-200 dark:shadow-gray-900 bg-white dark:bg-gray-800 duration-300 hover:-translate-y-1">
+                    {{- template "item.html" . }}
+                </div>
+                {{- end}}
+            </div>
+            <div id="modal"></div>
+        </main>
+    </div>
+</div>

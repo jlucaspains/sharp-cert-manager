@@ -1,8 +1,0 @@
-build
-.env
-coverage
-tmp
-*.exe
-*.crt
-*.key
-cover.out

@@ -1,15 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "gomod"
-    directory: "/backend"
-    schedule:
-      interval: "weekly"
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-  - package-ecosystem: "npm"
-    directory: "/frontend"
+    directory: "/src"
     schedule:
       interval: "weekly"
     groups:

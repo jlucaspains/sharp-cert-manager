@@ -1,5 +1,0 @@
-GET http://localhost:8000/api/check-cert?name=blog.lpains.net HTTP/2
-content-type: application/json
-
-###
-GET http://localhost:8000/api/cert-list HTTP/2

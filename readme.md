@@ -1,5 +1,5 @@
 # sharp-cert-manager
-This project aims to provide a simple tool to monitor certificate validity. It is composed of a [GO](https://go.dev/) backend API built using GO http server and a frontend build using [Svelte](https://svelte.dev/).
+This project aims to provide a simple tool to monitor certificate validity. It is entirely built using [GO](https://go.dev/).
 
 ![Demo frontend image](/docs/demo.jpeg)
 
@@ -26,26 +26,25 @@ docker run -it -p 8000:8000 \
 ## Running locally
 ### Prerequisites
 * Go 1.16+
-* NodeJS
+* Tailwindcss CLI
 
 ### CLone the repo
 ```bash
 git clone https://github.com/jlucaspains/sharp-cert-manager.git
 ```
 
-### Run the frontend
-```bash
-cd sharp-cert-manager/frontend
-npm install
-npm run dev
-```
-
-### Run the backend
+### Run
 First, Install the dependencies:
 
 ```bash
-cd sharp-cert-manager/backend
+cd sharp-cert-manager/src
 go mod download
+```
+
+Generate CSS using Tailwindcss CLI:
+
+```bash
+tailwindcss.exe -i ./frontend/styles.css -o ./public/styles.css --minify
 ```
 
 Create a dev `.env` file:

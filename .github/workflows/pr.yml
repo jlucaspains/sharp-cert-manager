@@ -66,36 +66,13 @@ jobs:
 
       - name: Pull dependencies
         run: go mod download
-        working-directory: ./backend
+        working-directory: ./src
       
       - name: Test
         run: go test -cover ./... > test-result.txt
-        working-directory: ./backend
+        working-directory: ./src
       
       - name: Pull request comment
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          path: ./backend/test-result.txt
-
-  frontend:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18.x'
-
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./frontend
-
-      - name: Create .env
-        run: echo "PUBLIC_API_BASE_PATH=/api" > .env
-        working-directory: ./frontend
-
-      - name: Build
-        run: npm run build
-        working-directory: ./frontend
+          path: ./src/test-result.txt
