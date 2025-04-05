@@ -27,6 +27,8 @@ COPY --from=gobuilder /etc/passwd /etc/passwd
 COPY --from=gobuilder /etc/group /etc/group
 WORKDIR /app
 COPY --from=gobuilder /app/certChecker .
+COPY --from=gobuilder /app/frontend ./frontend
+COPY --from=gobuilder /app/public ./public
 USER appuser:appuser
 EXPOSE 8000
 ENTRYPOINT ["./certChecker"]
