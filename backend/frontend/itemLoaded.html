@@ -1,4 +1,4 @@
-<div class="flex rounded-lg h-full bg-gray-600 p-8 flex-col">
+<div hx-get="/itemDetail?name={{.Hostname}}" hx-trigger="click" hx-target="#modal" class="flex rounded-lg h-full bg-gray-600 p-8 flex-col">
     <div class="flex items-center mb-3">
         <div
             class="w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full {{if .IsValid}}bg-green-600{{else}}bg-red-600{{end}} text-white flex-shrink-0">
@@ -15,7 +15,7 @@
             </svg>
             {{end}}
         </div>
-        <h2 class="text-white text-lg font-medium">{{ .Name }}</h2>
+        <h2 class="text-white text-lg font-medium">{{ .Hostname }}</h2>
     </div>
     <div class="flex flex-col justify-between flex-grow">
         <p transition:fade class="leading-relaxed text-base text-white">
@@ -25,7 +25,7 @@
             Signature: <span class="font-bold">{{.Signature}}</span>
         </p>
         <p transition:fade class="leading-relaxed text-base text-white">
-            Validity: <span class="font-bold">{{.Validity}} days</span>
+            Validity: <span class="font-bold">{{.ValidityInDays}} days</span>
         </p>
     </div>
 </div>

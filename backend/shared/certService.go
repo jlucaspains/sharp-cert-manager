@@ -89,7 +89,7 @@ func checkCertByUrlStatus(name string, url string, expirationWarningDays int) (*
 	resp, err := client.Get(url)
 
 	if err != nil || resp.TLS == nil {
-		result := &models.CertCheckResult{Hostname: name, CertStartDate: time.Time{}, CertEndDate: time.Time{}, CertDnsNames: []string{}, IsValid: false}
+		result := &models.CertCheckResult{Hostname: name, CertStartDate: time.Time{}, CertEndDate: time.Time{}, CertDnsNames: []string{}, IsValid: false, ValidityInDays: 0}
 		return result, err
 	}
 
@@ -122,6 +122,8 @@ func checkAzureCertStatus(name string, rawUrl string, expirationWarningDays int)
 
 func prepareResult(certificate *x509.Certificate, peerCertificates []*x509.Certificate, name string, expirationWarningDays int, skipHostNameValidation bool) *models.CertCheckResult {
 	isValid, errors := validate(certificate, name, skipHostNameValidation)
+	certNotAfter := certificate.NotAfter.UTC()
+	now := time.Now().UTC()
 	return &models.CertCheckResult{
 		Hostname:          name,
 		Issuer:            certificate.Issuer.CommonName,
@@ -135,8 +137,22 @@ func prepareResult(certificate *x509.Certificate, peerCertificates []*x509.Certi
 		IsValid:           isValid,
 		OtherCerts:        getOtherCerts(peerCertificates),
 		ValidationIssues:  errors,
-		ExpirationWarning: certificate.NotAfter.Before(time.Now().AddDate(0, 0, expirationWarningDays)),
+		ExpirationWarning: certNotAfter.Before(now.UTC().AddDate(0, 0, expirationWarningDays)),
+		ValidityInDays:    getValidityInDays(now, certNotAfter),
 	}
+}
+
+func getValidityInDays(startDate time.Time, endDate time.Time) int {
+	if startDate.IsZero() || endDate.IsZero() {
+		return 0
+	}
+
+	validity := endDate.Sub(startDate)
+	if validity.Hours() < 0 {
+		return 0
+	}
+
+	return int(validity.Hours() / 24)
 }
 
 func getCertFromKeyVault(keyVaultUrl string, certName string, hostName string, expirationWarningDays int) ([]byte, error) {

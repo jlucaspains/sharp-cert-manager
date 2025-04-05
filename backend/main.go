@@ -112,7 +112,9 @@ func startWebServer(siteList []models.CheckCertItem) {
 	}
 
 	router.HandleFunc("GET /", handlers.Index)
-	router.HandleFunc("GET /fragment", handlers.Fragment)
+	router.HandleFunc("GET /item", handlers.GetItem)
+	router.HandleFunc("GET /itemDetail", handlers.GetItemDetail)
+	router.HandleFunc("GET /empty", handlers.GetEmpty)
 	router.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public/"))))
 
 	logRouter := midlewares.NewLogger(router)

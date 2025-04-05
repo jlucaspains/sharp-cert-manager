@@ -22,6 +22,7 @@ type CertCheckResult struct {
 	OtherCerts        []OtherCert `json:"otherCerts"`
 	ValidationIssues  []string    `json:"validationIssues"`
 	ExpirationWarning bool        `json:"expirationWarning"`
+	ValidityInDays    int         `json:"validityInDays"`
 }
 
 type CertCheckType int
