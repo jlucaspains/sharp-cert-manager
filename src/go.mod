@@ -8,7 +8,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.8.2
 	github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azcertificates v1.3.1
 	github.com/adhocore/gronx v1.19.5
-	github.com/go-playground/validator/v10 v10.25.0
+	github.com/go-playground/validator/v10 v10.26.0
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
 )
