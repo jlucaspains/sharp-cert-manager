@@ -1,4 +1,4 @@
-<div hx-get="/itemDetail?name={{.Hostname}}" hx-trigger="click, keyup[key=='Enter']" tabindex="0" hx-target="#modal" class="flex rounded-lg h-full bg-gray-600 p-8 flex-col">
+<div hx-get="/itemDetail?name={{.Hostname}}" hx-trigger="click, keyup[key=='Enter']" hx-target="#modal" tabindex="0" class="flex rounded-lg h-full bg-gray-600 p-8 flex-col">
     <div class="flex items-center mb-3">
         <div
             class="w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full {{if .IsValid}}bg-green-600{{else}}bg-red-600{{end}} text-white flex-shrink-0">

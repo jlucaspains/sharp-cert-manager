@@ -54,7 +54,7 @@ func TestRendersItem(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)
 	// Testing the full HTML content is not practical, so we check for specific elements
-	assert.Contains(t, body, "hx-get=\"/itemDetail?name=blog.lpains.net\" hx-trigger=\"click\" hx-target=\"#modal\"")
+	assert.Contains(t, body, "hx-get=\"/itemDetail?name=blog.lpains.net\" hx-trigger=\"click, keyup[key=='Enter']\" hx-target=\"#modal\"")
 	assert.Contains(t, body, "<h2 class=\"text-white text-lg font-medium\">blog.lpains.net</h2>")
 }
 
