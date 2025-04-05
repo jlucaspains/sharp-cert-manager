@@ -1,5 +1,29 @@
 GET http://localhost:8000/api/check-cert?name=blog.lpains.net HTTP/2
 content-type: application/json
 
+
+###
+GET http://localhost:8000/health HTTP/2
+
+
+
 ###
 GET http://localhost:8000/api/cert-list HTTP/2
+
+
+###
+GET http://localhost:8000/ HTTP/2
+
+
+###
+GET http://localhost:8000/item?name=blog.lpains.net HTTP/2
+
+
+###
+GET http://localhost:8000/itemDetail?name=blog.lpains.net HTTP/2
+
+
+###
+GET http://localhost:8000/static/styles.css HTTP/2
+
+

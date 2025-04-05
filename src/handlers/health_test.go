@@ -14,7 +14,7 @@ func TestGetHealth(t *testing.T) {
 	router := http.NewServeMux()
 	router.HandleFunc("GET /health", handlers.HealthCheck)
 
-	code, body, err, _ := makeRequest[models.HealthResult](router, "GET", "/health", nil)
+	code, body, _, _, err := makeRequest[models.HealthResult](router, "GET", "/health", nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)

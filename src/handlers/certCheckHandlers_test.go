@@ -23,7 +23,7 @@ func TestGetCertList(t *testing.T) {
 	router := http.NewServeMux()
 	router.HandleFunc("GET /cert-list", handlers.GetCertList)
 
-	code, body, err, _ := makeRequest[[]models.CheckCertItem](router, "GET", "/cert-list", nil)
+	code, body, _, _, err := makeRequest[[]models.CheckCertItem](router, "GET", "/cert-list", nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)
@@ -38,7 +38,7 @@ func TestGetCheckStatus(t *testing.T) {
 	router.HandleFunc("GET /check-cert", handlers.CheckStatus)
 
 	url := fmt.Sprintf("/check-cert?name=%s", "blog.lpains.net")
-	code, body, err, _ := makeRequest[models.CertCheckResult](router, "GET", url, nil)
+	code, body, _, _, err := makeRequest[models.CertCheckResult](router, "GET", url, nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)
@@ -56,7 +56,7 @@ func TestGetCheckStatusNoName(t *testing.T) {
 	router := http.NewServeMux()
 	router.HandleFunc("GET /check-cert", handlers.CheckStatus)
 
-	code, body, err, _ := makeRequest[models.ErrorResult](router, "GET", "/check-cert", nil)
+	code, body, _, _, err := makeRequest[models.ErrorResult](router, "GET", "/check-cert", nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 400, code)
@@ -70,7 +70,7 @@ func TestGetCheckStatusInvalidName(t *testing.T) {
 	router := http.NewServeMux()
 	router.HandleFunc("GET /check-cert", handlers.CheckStatus)
 
-	code, body, err, _ := makeRequest[models.ErrorResult](router, "GET", "/check-cert?name=invalid", nil)
+	code, body, _, _, err := makeRequest[models.ErrorResult](router, "GET", "/check-cert?name=invalid", nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 400, code)

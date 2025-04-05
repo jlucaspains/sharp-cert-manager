@@ -17,7 +17,7 @@ func TestCORSCheckURL(t *testing.T) {
 	router := http.NewServeMux()
 	router.HandleFunc("OPTIONS /api/check-cert", handlers.CORS)
 
-	code, body, err, headers := makeRequest[string](router, "OPTIONS", "/api/check-cert", nil)
+	code, body, _, headers, err := makeRequest[string](router, "OPTIONS", "/api/check-cert", nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)
@@ -34,7 +34,7 @@ func TestCORSGetSiteList(t *testing.T) {
 	router := http.NewServeMux()
 	router.HandleFunc("GET /cert-list", handlers.GetCertList)
 
-	code, body, err, headers := makeRequest[[]models.CheckCertItem](router, "GET", "/cert-list", nil)
+	code, body, _, headers, err := makeRequest[[]models.CheckCertItem](router, "GET", "/cert-list", nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)
@@ -50,7 +50,7 @@ func TestNoCORSGetSiteList(t *testing.T) {
 	router := http.NewServeMux()
 	router.HandleFunc("GET /cert-list", handlers.GetCertList)
 
-	code, body, err, headers := makeRequest[[]models.CheckCertItem](router, "GET", "/cert-list", nil)
+	code, body, _, headers, err := makeRequest[[]models.CheckCertItem](router, "GET", "/cert-list", nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, 200, code)

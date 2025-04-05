@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -11,13 +12,14 @@ import (
 )
 
 var indexTemplate *template.Template
+var templatePath string = "frontend"
 
 func initTemplates() {
 	if indexTemplate != nil {
 		return
 	}
 
-	indexTemplate = template.Must(template.ParseGlob("frontend/*"))
+	indexTemplate = template.Must(template.ParseGlob(fmt.Sprintf("%s/*", templatePath)))
 }
 
 func (h Handlers) Index(w http.ResponseWriter, r *http.Request) {
@@ -110,5 +112,4 @@ func (h Handlers) GetItemDetail(w http.ResponseWriter, r *http.Request) {
 
 func (h Handlers) GetEmpty(w http.ResponseWriter, r *http.Request) {
 	h.HTML(w, http.StatusOK, "")
-	return
 }

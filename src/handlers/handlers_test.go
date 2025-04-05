@@ -61,7 +61,7 @@ func TestErrorTranslationServerError(t *testing.T) {
 	assert.Equal(t, "Unknown error", result.Errors[0])
 }
 
-func makeRequest[K any | []any](router *http.ServeMux, method string, url string, body any) (code int, respBody *K, err error, headers http.Header) {
+func makeRequest[K any | []any](router *http.ServeMux, method string, url string, body any) (code int, respBody *K, bodyString string, headers http.Header, err error) {
 	inputBody := ""
 
 	if body != nil {
@@ -74,13 +74,14 @@ func makeRequest[K any | []any](router *http.ServeMux, method string, url string
 	router.ServeHTTP(rr, req)
 
 	result := new(K)
+	bodyString = rr.Body.String()
 
 	switch any(result).(type) {
 	case *string:
-		// do nothing as we don't care about string
+
 	default:
 		err = json.Unmarshal(rr.Body.Bytes(), &result)
 	}
 
-	return rr.Code, result, err, rr.Result().Header
+	return rr.Code, result, bodyString, rr.Result().Header, err
 }
