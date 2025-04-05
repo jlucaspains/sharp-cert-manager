@@ -27,17 +27,7 @@ func (h Handlers) Index(w http.ResponseWriter, r *http.Request) {
 
 	err := indexTemplate.ExecuteTemplate(w, "index.html", h.CertList)
 
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-type ItemResult struct {
-	Name      string
-	Issuer    string
-	Signature string
-	Validity  int
-	IsValid   bool
+	handleError(w, err)
 }
 
 func (h Handlers) GetItem(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +35,7 @@ func (h Handlers) GetItem(w http.ResponseWriter, r *http.Request) {
 
 	name, _ := h.getQueryParam(r, "name")
 
-	log.Println("Received message for name: " + name)
+	log.Println("Received get item for name: " + name)
 
 	if name == "" {
 		h.HTML(w, http.StatusBadRequest, "name is required")
@@ -63,16 +53,13 @@ func (h Handlers) GetItem(w http.ResponseWriter, r *http.Request) {
 	result, err := shared.CheckCertStatus(item, h.ExpirationWarningDays)
 
 	if err != nil {
-		h.HTML(w, http.StatusBadRequest, "Failed to process request")
+		handleError(w, err)
 		return
 	}
 
 	err = indexTemplate.ExecuteTemplate(w, "itemLoaded.html", result)
 
-	if err != nil {
-		h.HTML(w, http.StatusBadRequest, "Failed to process request")
-		return
-	}
+	handleError(w, err)
 }
 
 func (h Handlers) GetItemDetail(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +67,7 @@ func (h Handlers) GetItemDetail(w http.ResponseWriter, r *http.Request) {
 
 	name, _ := h.getQueryParam(r, "name")
 
-	log.Println("Received message for name: " + name)
+	log.Println("Received detail message for name: " + name)
 
 	if name == "" {
 		h.HTML(w, http.StatusBadRequest, "name is required")
@@ -98,18 +85,22 @@ func (h Handlers) GetItemDetail(w http.ResponseWriter, r *http.Request) {
 	result, err := shared.CheckCertStatus(item, h.ExpirationWarningDays)
 
 	if err != nil {
-		h.HTML(w, http.StatusBadRequest, "Failed to process request")
+		handleError(w, err)
 		return
 	}
 
 	err = indexTemplate.ExecuteTemplate(w, "itemModal.html", result)
 
-	if err != nil {
-		h.HTML(w, http.StatusBadRequest, "Failed to process request")
-		return
-	}
+	handleError(w, err)
 }
 
 func (h Handlers) GetEmpty(w http.ResponseWriter, r *http.Request) {
 	h.HTML(w, http.StatusOK, "")
+}
+
+func handleError(w http.ResponseWriter, err error) {
+	if err != nil {
+		log.Printf("Processing error: %v", err)
+		http.Error(w, "Failed to process request", http.StatusInternalServerError)
+	}
 }

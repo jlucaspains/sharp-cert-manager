@@ -11,7 +11,7 @@
                 {{- range . }}
                 <div data-testid="result-item"
                     class="check-item rounded shadow-lg shadow-gray-200 dark:shadow-gray-900 bg-white dark:bg-gray-800 duration-300 hover:-translate-y-1"
-                    role="button" tabindex="0">
+                    tabindex="0">
                     {{- template "item.html" . }}
                 </div>
                 {{- end}}
