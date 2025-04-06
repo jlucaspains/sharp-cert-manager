@@ -25,7 +25,7 @@ docker run -it -p 8000:8000 \
 
 ## Running locally
 ### Prerequisites
-* Go 1.16+
+* Go 1.23+
 * Tailwindcss CLI
 
 ### CLone the repo

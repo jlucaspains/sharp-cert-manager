@@ -89,9 +89,9 @@ func stopJobs() {
 }
 
 func startWebServer(siteList []models.CheckCertItem) {
-	headless, ok := os.LookupEnv("HEADLESS")
+	headless, _ := os.LookupEnv("HEADLESS")
 
-	if !ok || headless == "true" {
+	if headless == "true" {
 		log.Println("Running in headless mode. Skipping web server start.")
 		return
 	}
