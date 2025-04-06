@@ -16,6 +16,10 @@ func (m *mockNotifier) Notify(result []CertCheckNotification) error {
 	return nil
 }
 
+func (m *mockNotifier) IsReady() bool {
+	return true
+}
+
 var certList = []models.CheckCertItem{
 	{Name: "blog.lpains.net", Url: "https://blog.lpains.net", Type: models.CertCheckURL},
 }

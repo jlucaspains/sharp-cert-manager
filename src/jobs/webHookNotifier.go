@@ -109,3 +109,7 @@ func (m *WebHookNotifier) getClient() *http.Client {
 
 	return m.httpClient
 }
+
+func (m *WebHookNotifier) IsReady() bool {
+	return m.WebhookUrl != ""
+}

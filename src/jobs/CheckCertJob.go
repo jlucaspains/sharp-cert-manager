@@ -12,6 +12,7 @@ import (
 
 type Notifier interface {
 	Notify(result []CertCheckNotification) error
+	IsReady() bool
 }
 
 type CheckCertJob struct {
@@ -54,7 +55,7 @@ func (c *CheckCertJob) Init(schedule string, level string, warningDays int, cert
 		return fmt.Errorf("a valid cron schedule is required")
 	}
 
-	if notifier == nil {
+	if notifier == nil || !notifier.IsReady() {
 		log.Printf("A valid notifier is required")
 		return fmt.Errorf("a valid notifier is required")
 	}
