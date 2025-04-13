@@ -15,7 +15,7 @@ type Handlers struct {
 	CORSOrigins           string
 }
 
-func (h Handlers) JSON(w http.ResponseWriter, statusCode int, data interface{}) {
+func (h Handlers) JSON(w http.ResponseWriter, statusCode int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if len(h.CORSOrigins) > 0 {
