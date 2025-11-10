@@ -147,8 +147,7 @@ func (c *CheckCertJob) getNotificationModel(certificate *models.CertCheckResult)
 		Messages:          certificate.ValidationIssues,
 	}
 
-	if certificate.IsValid && result.ExpirationWarning {
-		// Calculate CertEndDate days from today
+	if certificate.IsValid {
 		days := int(time.Until(certificate.CertEndDate).Hours() / 24)
 		result.Messages = append(result.Messages, fmt.Sprintf("Certificate expires in %d days", days))
 	}
