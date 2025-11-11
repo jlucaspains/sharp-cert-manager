@@ -1,7 +1,9 @@
 package jobs
 
 import (
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/jlucaspains/sharp-cert-manager/models"
 	"github.com/stretchr/testify/assert"
@@ -116,4 +118,92 @@ func TestTryExecuteDueWarning(t *testing.T) {
 	checkCertJob.tryExecute()
 
 	assert.True(t, notifier.executed)
+}
+
+func TestGetNotificationModelValidCertWithWarning(t *testing.T) {
+	checkCertJob := &CheckCertJob{}
+	checkCertJob.Init("* * * * *", "", 30, certList, &mockNotifier{})
+
+	expirationDate := time.Now().AddDate(0, 0, 15)
+	cert := &models.CertCheckResult{
+		Hostname:           "test.example.com",
+		IsValid:            true,
+		ExpirationWarning:  true,
+		CertEndDate:        expirationDate,
+		ValidationIssues:   []string{},
+	}
+
+	result := checkCertJob.getNotificationModel(cert)
+
+	assert.True(t, result.IsValid)
+	assert.True(t, result.ExpirationWarning)
+	assert.Equal(t, "test.example.com", result.Hostname)
+	assert.True(t, len(result.Messages) > 0, "Messages should contain expiration date")
+	assert.True(t, strings.Contains(result.Messages[0], "Certificate expires in"), "Should contain expiration message")
+	assert.True(t, strings.Contains(result.Messages[0], "days"), "Should contain 'days' in message")
+}
+
+func TestGetNotificationModelValidCertWithoutWarning(t *testing.T) {
+	checkCertJob := &CheckCertJob{}
+	checkCertJob.Init("* * * * *", "", 30, certList, &mockNotifier{})
+
+	expirationDate := time.Now().AddDate(0, 1, 0)
+	cert := &models.CertCheckResult{
+		Hostname:           "test.example.com",
+		IsValid:            true,
+		ExpirationWarning:  false,
+		CertEndDate:        expirationDate,
+		ValidationIssues:   []string{},
+	}
+
+	result := checkCertJob.getNotificationModel(cert)
+
+	assert.True(t, result.IsValid)
+	assert.False(t, result.ExpirationWarning)
+	assert.Equal(t, "test.example.com", result.Hostname)
+	assert.True(t, len(result.Messages) > 0, "Messages should contain expiration date even without warning")
+	assert.True(t, strings.Contains(result.Messages[0], "Certificate expires in"), "Should contain expiration message")
+}
+
+func TestGetNotificationModelValidCertWithValidationIssues(t *testing.T) {
+	checkCertJob := &CheckCertJob{}
+	checkCertJob.Init("* * * * *", "", 30, certList, &mockNotifier{})
+
+	expirationDate := time.Now().AddDate(0, 1, 0)
+	cert := &models.CertCheckResult{
+		Hostname:           "test.example.com",
+		IsValid:            true,
+		ExpirationWarning:  false,
+		CertEndDate:        expirationDate,
+		ValidationIssues:   []string{"Issue 1", "Issue 2"},
+	}
+
+	result := checkCertJob.getNotificationModel(cert)
+
+	assert.True(t, result.IsValid)
+	assert.Equal(t, 3, len(result.Messages), "Should have 2 validation issues + 1 expiration message")
+	assert.Equal(t, "Issue 1", result.Messages[0])
+	assert.Equal(t, "Issue 2", result.Messages[1])
+	assert.True(t, strings.Contains(result.Messages[2], "Certificate expires in"), "Third message should be expiration")
+}
+
+func TestGetNotificationModelInvalidCert(t *testing.T) {
+	checkCertJob := &CheckCertJob{}
+	checkCertJob.Init("* * * * *", "", 30, certList, &mockNotifier{})
+
+	expirationDate := time.Now().AddDate(0, 0, -5)
+	cert := &models.CertCheckResult{
+		Hostname:           "test.example.com",
+		IsValid:            false,
+		ExpirationWarning:  false,
+		CertEndDate:        expirationDate,
+		ValidationIssues:   []string{"Certificate expired"},
+	}
+
+	result := checkCertJob.getNotificationModel(cert)
+
+	assert.False(t, result.IsValid)
+	assert.Equal(t, 1, len(result.Messages), "Should only have validation issue, no expiration message for invalid certs")
+	assert.Equal(t, "Certificate expired", result.Messages[0])
+	assert.False(t, strings.Contains(strings.Join(result.Messages, " "), "Certificate expires in"))
 }
