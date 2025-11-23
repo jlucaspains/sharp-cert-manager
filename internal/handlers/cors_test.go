@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/jlucaspains/sharp-cert-manager/models"
-	"github.com/jlucaspains/sharp-cert-manager/shared"
+	"github.com/jlucaspains/sharp-cert-manager/internal/models"
+	"github.com/jlucaspains/sharp-cert-manager/internal/shared"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )

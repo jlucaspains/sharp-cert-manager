@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/jlucaspains/sharp-cert-manager/models"
-	"github.com/jlucaspains/sharp-cert-manager/shared"
+	"github.com/jlucaspains/sharp-cert-manager/internal/models"
+	"github.com/jlucaspains/sharp-cert-manager/internal/shared"
 )
 
 var indexTemplate *template.Template

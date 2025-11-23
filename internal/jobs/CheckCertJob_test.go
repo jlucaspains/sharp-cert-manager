@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jlucaspains/sharp-cert-manager/models"
+	"github.com/jlucaspains/sharp-cert-manager/internal/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -126,11 +126,11 @@ func TestGetNotificationModelValidCertWithWarning(t *testing.T) {
 
 	expirationDate := time.Now().AddDate(0, 0, 15)
 	cert := &models.CertCheckResult{
-		Hostname:           "test.example.com",
-		IsValid:            true,
-		ExpirationWarning:  true,
-		CertEndDate:        expirationDate,
-		ValidationIssues:   []string{},
+		Hostname:          "test.example.com",
+		IsValid:           true,
+		ExpirationWarning: true,
+		CertEndDate:       expirationDate,
+		ValidationIssues:  []string{},
 	}
 
 	result := checkCertJob.getNotificationModel(cert)
@@ -149,11 +149,11 @@ func TestGetNotificationModelValidCertWithoutWarning(t *testing.T) {
 
 	expirationDate := time.Now().AddDate(0, 1, 0)
 	cert := &models.CertCheckResult{
-		Hostname:           "test.example.com",
-		IsValid:            true,
-		ExpirationWarning:  false,
-		CertEndDate:        expirationDate,
-		ValidationIssues:   []string{},
+		Hostname:          "test.example.com",
+		IsValid:           true,
+		ExpirationWarning: false,
+		CertEndDate:       expirationDate,
+		ValidationIssues:  []string{},
 	}
 
 	result := checkCertJob.getNotificationModel(cert)
@@ -171,11 +171,11 @@ func TestGetNotificationModelValidCertWithValidationIssues(t *testing.T) {
 
 	expirationDate := time.Now().AddDate(0, 1, 0)
 	cert := &models.CertCheckResult{
-		Hostname:           "test.example.com",
-		IsValid:            true,
-		ExpirationWarning:  false,
-		CertEndDate:        expirationDate,
-		ValidationIssues:   []string{"Issue 1", "Issue 2"},
+		Hostname:          "test.example.com",
+		IsValid:           true,
+		ExpirationWarning: false,
+		CertEndDate:       expirationDate,
+		ValidationIssues:  []string{"Issue 1", "Issue 2"},
 	}
 
 	result := checkCertJob.getNotificationModel(cert)
@@ -193,11 +193,11 @@ func TestGetNotificationModelInvalidCert(t *testing.T) {
 
 	expirationDate := time.Now().AddDate(0, 0, -5)
 	cert := &models.CertCheckResult{
-		Hostname:           "test.example.com",
-		IsValid:            false,
-		ExpirationWarning:  false,
-		CertEndDate:        expirationDate,
-		ValidationIssues:   []string{"Certificate expired"},
+		Hostname:          "test.example.com",
+		IsValid:           false,
+		ExpirationWarning: false,
+		CertEndDate:       expirationDate,
+		ValidationIssues:  []string{"Certificate expired"},
 	}
 
 	result := checkCertJob.getNotificationModel(cert)

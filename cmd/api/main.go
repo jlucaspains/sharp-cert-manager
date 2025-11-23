@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/jlucaspains/sharp-cert-manager/handlers"
-	"github.com/jlucaspains/sharp-cert-manager/jobs"
-	"github.com/jlucaspains/sharp-cert-manager/midlewares"
-	"github.com/jlucaspains/sharp-cert-manager/models"
-	"github.com/jlucaspains/sharp-cert-manager/shared"
+	"github.com/jlucaspains/sharp-cert-manager/internal/handlers"
+	"github.com/jlucaspains/sharp-cert-manager/internal/jobs"
+	"github.com/jlucaspains/sharp-cert-manager/internal/midlewares"
+	"github.com/jlucaspains/sharp-cert-manager/internal/models"
+	"github.com/jlucaspains/sharp-cert-manager/internal/shared"
 	"github.com/joho/godotenv"
 )
 

@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/jlucaspains/sharp-cert-manager/models"
-	"github.com/jlucaspains/sharp-cert-manager/shared"
+	"github.com/jlucaspains/sharp-cert-manager/internal/models"
+	"github.com/jlucaspains/sharp-cert-manager/internal/shared"
 	"github.com/spf13/cobra"
 )
 
