@@ -10,7 +10,7 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jlucaspains/sharp-cert-manager/internal/models"
-	"github.com/jlucaspains/sharp-cert-manager/internal/shared"
+	"github.com/jlucaspains/sharp-cert-manager/internal/services"
 	"github.com/spf13/cobra"
 )
 
@@ -75,7 +75,7 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	for domain, parsedUrl := range parsedUrls {
 		logger.Debug("Checking certificate for url", "domain", domain, "url", parsedUrl)
 
-		checkStatus, err := shared.CheckCertStatus(models.CheckCertItem{
+		checkStatus, err := services.CheckCertStatus(models.CheckCertItem{
 			Name: domain,
 			Url:  parsedUrl,
 			Type: models.CertCheckURL,

@@ -7,7 +7,7 @@ import (
 
 	"github.com/adhocore/gronx"
 	"github.com/jlucaspains/sharp-cert-manager/internal/models"
-	"github.com/jlucaspains/sharp-cert-manager/internal/shared"
+	"github.com/jlucaspains/sharp-cert-manager/internal/services"
 )
 
 type Notifier interface {
@@ -113,7 +113,7 @@ func (c *CheckCertJob) tryExecute() {
 func (c *CheckCertJob) execute() {
 	result := []CertCheckNotification{}
 	for _, item := range c.certList {
-		checkStatus, err := shared.CheckCertStatus(item, c.warningDays)
+		checkStatus, err := services.CheckCertStatus(item, c.warningDays)
 
 		if err != nil {
 			log.Printf("Error checking cert status: %s", err)

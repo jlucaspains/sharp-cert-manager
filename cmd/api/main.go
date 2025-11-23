@@ -13,7 +13,7 @@ import (
 	"github.com/jlucaspains/sharp-cert-manager/internal/jobs"
 	"github.com/jlucaspains/sharp-cert-manager/internal/midlewares"
 	"github.com/jlucaspains/sharp-cert-manager/internal/models"
-	"github.com/jlucaspains/sharp-cert-manager/internal/shared"
+	"github.com/jlucaspains/sharp-cert-manager/internal/services"
 	"github.com/joho/godotenv"
 )
 
@@ -177,7 +177,7 @@ func runOnce(siteList []models.CheckCertItem, done chan os.Signal) {
 func main() {
 	loadEnv()
 
-	siteList := shared.GetConfigCerts()
+	siteList := services.GetConfigCerts()
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)

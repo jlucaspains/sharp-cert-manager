@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/jlucaspains/sharp-cert-manager/internal/models"
-	"github.com/jlucaspains/sharp-cert-manager/internal/shared"
+	"github.com/jlucaspains/sharp-cert-manager/internal/services"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
@@ -28,7 +28,7 @@ func TestCORSCheckURL(t *testing.T) {
 func TestCORSGetSiteList(t *testing.T) {
 	godotenv.Load("../.test.env")
 	handlers := new(Handlers)
-	handlers.CertList = shared.GetConfigCerts()
+	handlers.CertList = services.GetConfigCerts()
 	handlers.CORSOrigins = "http://localhost:5173"
 
 	router := http.NewServeMux()
@@ -45,7 +45,7 @@ func TestCORSGetSiteList(t *testing.T) {
 func TestNoCORSGetSiteList(t *testing.T) {
 	godotenv.Load("../.test.env")
 	handlers := new(Handlers)
-	handlers.CertList = shared.GetConfigCerts()
+	handlers.CertList = services.GetConfigCerts()
 
 	router := http.NewServeMux()
 	router.HandleFunc("GET /cert-list", handlers.GetCertList)
