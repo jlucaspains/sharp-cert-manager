@@ -3,7 +3,7 @@ package jobs
 import (
 	"testing"
 
-	"github.com/jlucaspains/sharp-cert-manager/models"
+	"github.com/jlucaspains/sharp-cert-manager/internal/models"
 	"github.com/stretchr/testify/assert"
 )
 

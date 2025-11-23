@@ -1,4 +1,4 @@
-package shared
+package services
 
 import (
 	"crypto/rand"
@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jlucaspains/sharp-cert-manager/models"
+	"github.com/jlucaspains/sharp-cert-manager/internal/models"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
@@ -194,7 +194,7 @@ yjbTOuy8KoxNb15g3Ysesbw=
 }
 
 func TestGetConfigCerts(t *testing.T) {
-	godotenv.Load("../.test.env")
+	godotenv.Load("../../.test.env")
 
 	sites := GetConfigCerts()
 

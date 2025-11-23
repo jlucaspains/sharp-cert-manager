@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/jlucaspains/sharp-cert-manager/models"
-	"github.com/jlucaspains/sharp-cert-manager/shared"
+	"github.com/jlucaspains/sharp-cert-manager/internal/models"
+	"github.com/jlucaspains/sharp-cert-manager/internal/services"
 )
 
 func (h Handlers) GetCertList(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +33,7 @@ func (h Handlers) CheckStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := h.CertList[idx]
-	result, err := shared.CheckCertStatus(item, h.ExpirationWarningDays)
+	result, err := services.CheckCertStatus(item, h.ExpirationWarningDays)
 
 	if err != nil {
 		h.JSON(w, http.StatusBadRequest, &models.ErrorResult{Errors: []string{err.Error()}})
