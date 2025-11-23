@@ -26,7 +26,7 @@ func TestCORSCheckURL(t *testing.T) {
 }
 
 func TestCORSGetSiteList(t *testing.T) {
-	godotenv.Load("../.test.env")
+	godotenv.Load("../../.test.env")
 	handlers := new(Handlers)
 	handlers.CertList = services.GetConfigCerts()
 	handlers.CORSOrigins = "http://localhost:5173"

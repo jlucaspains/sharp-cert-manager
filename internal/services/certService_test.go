@@ -194,7 +194,7 @@ yjbTOuy8KoxNb15g3Ysesbw=
 }
 
 func TestGetConfigCerts(t *testing.T) {
-	godotenv.Load("../.test.env")
+	godotenv.Load("../../.test.env")
 
 	sites := GetConfigCerts()
 

@@ -9,7 +9,7 @@ import (
 )
 
 func TestInitTemplate(t *testing.T) {
-	templatePath = "../frontend"
+	templatePath = "../../frontend"
 	initTemplates()
 
 	assert.NotNil(t, indexTemplate.Lookup("index.html"))
@@ -21,7 +21,7 @@ func TestInitTemplate(t *testing.T) {
 }
 
 func TestRendersIndex(t *testing.T) {
-	templatePath = "../frontend"
+	templatePath = "../../frontend"
 	handlers := new(Handlers)
 	handlers.CertList = []models.CheckCertItem{
 		{Name: "blog.lpains.net", Url: "https://blog.lpains.net", Type: models.CertCheckURL},
@@ -40,7 +40,7 @@ func TestRendersIndex(t *testing.T) {
 }
 
 func TestRendersItem(t *testing.T) {
-	templatePath = "../frontend"
+	templatePath = "../../frontend"
 	handlers := new(Handlers)
 	handlers.CertList = []models.CheckCertItem{
 		{Name: "blog.lpains.net", Url: "https://blog.lpains.net", Type: models.CertCheckURL},
