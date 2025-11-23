@@ -14,6 +14,9 @@ Slack message:
 ![Demo slack message](/docs/SlackDemo.jpg)
 
 # Getting started
+### Running webserver via Docker
+> Note: replace docker with podman if needed.
+
 The easiest way to get started is to run the Docker image published to [Docker Hub](https://hub.docker.com/repository/docker/jlucaspains/sharp-cert-manager/general). Replace the `SITE_1` parameter value with a website to monitor. To add other websites, just add parameters `SITE_n` where `n` is an integer.
 
 ```bash
@@ -23,9 +26,15 @@ docker run -it -p 8000:8000 \
     jlucaspains/sharp-cert-manager
 ```
 
+### Running CLI
+```bash
+go install github.com/jlucaspains/sharp-cert-manager/cmd/sharp-cert-manager@latest
+sharp-cert-manager check --url https://expired.badssl.com/
+```
+
 ## Running locally
 ### Prerequisites
-* Go 1.23+
+* Go 1.24+
 * Tailwindcss CLI
 
 ### CLone the repo
@@ -33,14 +42,13 @@ docker run -it -p 8000:8000 \
 git clone https://github.com/jlucaspains/sharp-cert-manager.git
 ```
 
-### Run
-First, Install the dependencies:
-
+### Install dependencies
 ```bash
 cd sharp-cert-manager
 go mod download
 ```
 
+### Run web server
 Generate CSS using Tailwindcss CLI:
 
 ```bash
@@ -52,9 +60,9 @@ Create a dev `.env` file:
 echo "ENV=local\nSITE_1=https://expired.badssl.com/" > .env
 ```
 
-Finally, run the app:
+### Run CLI
 ```bash
-go run main.go
+go run .\cmd\sharp-cert-manager\ check --url https://expired.badssl.com/
 ```
 
 ## Running in Azure
