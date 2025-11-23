@@ -45,7 +45,7 @@ func init() {
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {
-		panic(err)
+		os.Exit(1)
 	}
 }
 
@@ -58,15 +58,13 @@ func runCheck(cmd *cobra.Command, args []string) error {
 
 		parsedUrl, err := url.ParseRequestURI(parameterUrl)
 		if err != nil {
-			fmt.Printf("\033[31mInvalid URL %s\033[0m\n", parameterUrl)
-			os.Exit(1)
+			return fmt.Errorf("\033[31mInvalid URL %s: %w\033[0m", parameterUrl, err)
 		}
 		parsedUrls[parsedUrl.Host] = parameterUrl
 	}
 
 	if validityDaysWarning < 0 {
-		fmt.Println("\033[31mWarning threshold must be a non-negative integer\033[0m")
-		os.Exit(2)
+		return fmt.Errorf("\033[31mWarning threshold must be a non-negative integer\033[0m")
 	}
 
 	logger.Debug("Starting Sharp Cert Manager...", "urls", urls, "validityDaysWarning", validityDaysWarning)
