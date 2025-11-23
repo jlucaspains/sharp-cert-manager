@@ -8,7 +8,7 @@ import (
 	"slices"
 
 	"github.com/jlucaspains/sharp-cert-manager/internal/models"
-	"github.com/jlucaspains/sharp-cert-manager/internal/shared"
+	"github.com/jlucaspains/sharp-cert-manager/internal/services"
 )
 
 var indexTemplate *template.Template
@@ -50,7 +50,7 @@ func (h Handlers) GetItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := h.CertList[idx]
-	result, err := shared.CheckCertStatus(item, h.ExpirationWarningDays)
+	result, err := services.CheckCertStatus(item, h.ExpirationWarningDays)
 
 	if err != nil {
 		handleError(w, err)
@@ -82,7 +82,7 @@ func (h Handlers) GetItemDetail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := h.CertList[idx]
-	result, err := shared.CheckCertStatus(item, h.ExpirationWarningDays)
+	result, err := services.CheckCertStatus(item, h.ExpirationWarningDays)
 
 	if err != nil {
 		handleError(w, err)
